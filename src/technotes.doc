@@ -1,0 +1,89 @@
+		TECHINCAL NOTES FOR CSHELL
+		==========================
+
+
+THE PARSER
+----------
+
+The  heart  of  CShell  is the parser.  It was, I suppose, originally taken
+from a UNIX csh. It does its job in two steps:
+
+First  comes  the  preformatting,  which is done while copying the original
+line  to  a temporary buffer.  It is important to make a difference between
+quoted  and  and  unquoted characters.  Earlier shell versions of the shell
+set  the  most  significant  bit  of quoted chars, but this made the use of
+international  character  sets  impossible.   Now  it's  done the other way
+round:   Every _unquoted_ char with special meaning (e.g.  the asterisk) is
+replaced  by  a number between 128 and 159.  Ascii code 160 is used as word
+separator in strings (so words may contain blanks).
+
+After  the preformatting is done, the parser's main task is building up the
+argument  array  av[i]  for  the internal and external commands.  Memory is
+allocated  for  every argument and the argument is put together from one or
+more  tokens  (e.g.   $a$b).  After av[0] has been completed, certain flags
+are  set  in  order  to  do  things  like preventing wild card expinsion of
+arguments to 'dir'.
+
+Then,  with the argument line is complete, the aliases list is searched for
+a  name that matches av[0].  If it exists, the parser is called recursively
+with  the  alias's  command line.  Recursive calls of the parser (using the
+function  execute()) have no more side effects at all since version 5.1 and
+can therefore used to do things like automatic cd and class features.
+
+In  order to speed up this process with many allocations and deallocations,
+I  have  written  a  custom  storage  allocator.   It  allocates  groups of
+1000-byte-blocks  (called  frames)  using malloc() and then distibutes them
+until  they're  used  up.  Of course, deallocation of single allocations is
+not  possible,  only  the  frame as a whole can be deallocated.  But that's
+okay, since all temporaries are deallocated when the parser is left.
+
+
+THE BUILTINS
+------------
+
+The other side of the shell are the built in commands.  They look much like
+CLI commands in C, but they have lots of support functions for their needs.
+
+To  write a builtin command for CShell, you use the global variables av and
+ac  instead of argv and argc, and use printf() for output.  That's it.  Any
+other changes, if necessary, will be done by me.
+
+Every  builtin  command  has its equivalent as a C function with the prefix
+do_ (example:  do_addbuffers).  The are no hard coded jumps to any of those
+functions,  instead there is a table with the descriptions of all functions
+(like  name, usage, minimum arguments and, last but not least, a pointer to
+that function).
+
+
+WHY BUILT IN COMMANDS?
+----------------------
+
+The reasons why C-Shell still relies heavily on internal commands:
+- They can take advantage from each other (e.g. class recognition in the
+  'dir' command, use of 'search' command in quick cd)
+- They have a fast calling sequence
+- They need no hard disk seeks, so the startup can be accelerated
+  significantly
+- They are shorter than external commands
+- And finally, if you don't like them, don't use them. The wasted resources
+  become more and more negligible nowadays... CShell uses 2% of my memory.
+
+
+SOURCES
+-------
+
+The  source  for CShell is available, if you don't have it, request it from
+me.   It consists of 10 modules, together 200K.  It is compilable under SAS
+(Lattice)  &  Manx  C,  although  the  executables produced by Manx are not
+residentable.   If you want to modify it, ask me for an up-to-date version
+first.   You  may  not  release  modified  versions  (imagine  the chaos if
+everbody  releases his private csh), but if you send them to me, you have a
+good  chance  that I'll build it in.  You'll be, of course, be mentioned in
+the docs.
+
+Even  if  you  don't  intend to modify it, I still encourage you to get the
+source,  because  there  are  so many things you can look up there once you
+need them (did *you* know how to set the system date?).  I apologize for my
+poor to nonexistent comments, I'll go through again when I've got the time.
+Ah,  yes,  that  famous  Dillon-formatting  is gone, now it's traditionally
+formatted.

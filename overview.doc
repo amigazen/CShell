@@ -1,0 +1,134 @@
+CShell is a replacement for the standard Amiga shell.
+
+- Press the HELP key to see a list of built in commands. After you assign
+  CSH: to where csh.doc is, you can also enter 'man <command>'.
+- After you have started csh, you can remove the disk you booted from,
+  as all important commands are built in.
+- All built in commands may be abbreviated. Instead if typing 'assign',
+  just enter 'ass'. If you don't like this, enter 'set _abbrev n'.
+- Built in commands have to be lowercase. Therefore, to force an external
+  command to be used, capitalize the first letter: 'Dir df1: ALL'
+- All commands (even externals) accept wild cards. The asterisk '*' is
+  the same as #? under AmigaDOS:  'copy *.c ram:'
+- Quick installation: Call csh at the end of your startup-sequence. Create
+  a file s:.login where you put all your private alias commands.
+- The alias command is very powerful: 'alias hi "%a echo $a$a"' will echo
+  twice what you passed to it as argument. aliases may call each other.
+- Whenever you need to specify a file name, just type the beginning of it
+  and press TAB then. Repeat if necessary.
+- After you type 'cd -g DH0: DH1:' (insert your partitions here), you can
+  cd to any directory anywhere on the hard disk without specifying a path.
+- You can set the function keys to any string you like: 'set _f1 dir^m'
+  will execute a 'dir' command whenever you press f1.
+- You can recall all old lines by typing the up and down arrow. If you type
+  the beginning of an old line and press shift-up, it will reappear.
+- CShell has all important properties of a programming language. CShell
+  scripts can do very complicated tasks. Refer to csh.doc for details.
+- You can control application programs with a REXX port without having
+  AREXX running:  'rxsend rexx_ced CEDTOFRONT'
+
+abortline   aborts current command line
+action      tries to perform an action on a file. see 'class'
+addbuffers  adds buffers to a disk
+alias       defines a shortcut for a list of commands
+ascii       shows an ascii table
+aset        sets a ARP environment variable
+assign      assign a logical name to a physical directory
+basename    extracts the file name off a path
+cat         same as type
+cd          changes current directory. lots of goodies
+class       defines file classes and actions that can be performed on them
+close       closes a file opened by 'open'
+copy        copies a files and/or directories to a different place
+cp          same as copy
+date        displays or sets the time and date
+dec         decreases a variable
+delete      removes a file or directory
+dir         shows a directory. lots of goodies
+diskchange  indicates a disk change in a drive
+echo        echoes its arguments to stdout
+else        used in if/else/endif
+endif       used in if/else/endif
+error       generates specific return code
+exec        executes its arguments as a command
+fault       prints error string associated with a secondary error code
+filenote    sets a file comment for a file
+flist       lists all open files
+fltlower    filter: reads stdin, converts to lower case, prints to stdout
+fltupper    filter: converts to upper case
+foreach     executes its last argument multiply, picking var values from args
+forever     executes its last argument forever
+forline     executes its last argument multiply, picking var values from file
+fornum      executes its last argument multiply, assigning numeric values
+getenv      reads an ENV: variable
+goto        jumps to a label
+head        filter: pick the first lines of stdin
+help        shows list of commands
+history     shows last commands entered
+howmany     indicates the number of shells running
+htype       types a file as hex dump
+if          conditinal clause: 'if a < 3;echo lower;endif'
+inc         increases a variable
+info        shows info on drives
+input       gets one variable from stdin
+join        joins several files to one
+keymap      redefines the editing keymap
+label       sets destination for a 'goto'
+local       defines a variable to be local
+linecnt     filter: counts lines from stdin
+ls          same as dir
+man         prints detailed information on a cshell command
+md          same as mkdir
+mem         shows free memory
+menu        installs an intuition menu
+mkdir       creates a directory
+mv          same as rename
+open        opens a file
+path        shows or sets the search path for external commands
+pri         sets task priority
+protect     alters protection bits of a file
+ps          shows currently running tasks
+pwd         prints the current (working) directory
+qsort       filter: sorts stdin, outputs to stdout
+quit        quits cshell (ARGH!)
+rback       runs an external command in the background
+rename      renames a file
+readfile    reads a file and assigns it to a variable
+relabel     renames a disk
+resident    makes an external command resident
+return      quit a batch file or cshell
+rm          same as delete
+rpn         reverse polish calculator
+rxrec       enter rexx command receive mode
+rxsend      send a rexx command to an application program
+run         runs an external command asychronously
+search      searches files for a string. lots of goodies
+set         assings a value to a variable
+setenv      sets an ENV: variable
+sleep       delays program flow
+split       splits a variable
+source      starts a batch file
+stack       sets the stack for commands to be started
+strhead     removes the suffix from a file name
+strings     finds strings inside binaries
+strleft     determines first n chars in a string
+strlen      determines length of string
+strmid      finds first m chars starting at position n
+strright    determines last n chars in a string
+strtail     finds ending of a variable
+tackon      adds a file name to a path name
+tail        filter: outputs last n lines of stdin
+tee         filter: copies stdin to stdout and stderr
+touch       updates date stamp of a file
+truncate    filter: reduces width of a text file
+type        types a file to stdout
+unalias     deletes an alias
+uniq        filter: removes subsequent identical lines
+unlocal     deletes a local variable
+unset       deletes a variable
+usage       shows a usage string for a cshell command
+version     displays current cshell version
+waitforport waits for a rexx port to come up
+whereis     finds a file on a hard disk
+window      resizes the window cshell is running in
+writefile   writes a variable to stdout one line per word

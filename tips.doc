@@ -1,0 +1,209 @@
+Some random tips & tricks I collected:
+
+
+    EDITING
+
+
+The very common situation:
+$ mkdir documents
+$ cd documents
+can be abbreviated to:
+$ mk documents
+$ [CTRL-T]              (inserts all but first word of previous line)
+
+
+Also very common:
+$ mv document document1
+$ mv document[CTRL-P]1
+The CTRL-P function duplicates the previous word on the command line
+
+
+You  might  have  wondered  what  CTRL-N  (leave current line) is good for.
+Assume, for example, you just typed
+$ rm dh1:graphics/lo-res/gorilla
+when  it comes to your mind that would prefer to keep a copy of that pic on
+diskette.  Many would now delete this command line.  Being a smart guy, you
+do the following:
+$ [CTRL-N]              (leaves this command line alone)
+$ co[CTRL-T] df0:
+$ [Up-Arrow][Up-Arrow]  (gets back the command line you left)
+
+
+In case you don't know what history completion is:
+$ search *.c *.h makefile foobar
+$ ram:
+$ dir
+$ rm tmpfile
+Now if want to repeat the search command, enter
+$ se[Shift-Up-Arrow]
+which brings up the the last command that started with 'se'.
+
+
+If you ever cycle too far using the TAB key, skipping the entry you
+orignally wanted, you can get back one entry using CTRL-U [undo].
+The same applies if you entered an abbreviation, press TAB but get
+aware that the abbrev was too short.
+
+
+If you want to delete the file
+$ rm dh2:comm/uucp/mail/junk/409
+and you're far away from that directory, enter
+$ rm ju[ESC-c]409          (enters the resulting path of cd ju)
+
+
+The  same function is also usable for 'cd'.  Assume you have several 'junk'
+directories:
+$ ju[ESC-c][CTRL-R][CTRL-R][CTRL-R]
+Like  this  you'll cycle through the junk directories.  When you've got the
+right one, press enter.
+
+
+Assume  there  are the files comm1.c, comm2.c, and comm3.c as well as their
+corresponding .o files.  You want comm3.c:
+$ co[Shift-Tab]1[Tab]
+Of course this is more useful with longer file names.
+
+
+You can tab file name expand any patterns, not only abbreviations.  Assume
+you want to delete all .c files in the current directory but the last:
+$ rm *.c[ESC-Tab][CTRL-W]
+In addition, you get to see all the files once again before deleting them.
+
+
+Next one: You have entered:
+$ dir
+$ foreach i ( *.c ) "e >>ram:temp $i
+$ more ram:temp
+and you would like to execute the same three statements again, enter:
+$ [Up-Arrow][Up-Arrow][Up-Arrow][ESC-Return][CTRL-R][CTRL-R]
+
+
+I  know  that  the editing is not very user friendly.  This is because it's
+quite  hard  and troublesome to get raw keycodes from the console, and it's
+impossible  to  get  them  from a VT200 terminal.  Therefore I had to stick
+with CTRL and ESC combinations. Once you have learnt them (some of them are
+similar to EMACS), you can save lots of typing.
+
+
+    COMMANDS
+
+
+My  advice  here  is clear:  Use aliases, aliases, aliases.  In order to be
+able  to  create  them as quickly as possible, create an alias (e.g.  'le')
+that edits your login file, plus another one (e.g.  'lx'), that re-executes
+it.   My  login  contains  almost  only aliases, everthing else I've put in
+'firstlogin.sh'.
+
+
+If you don't like the default options of one command, you can add more of
+them using an alias:
+$ alias dir "dir -q
+From now on, blocks will no longer be displayed in 'dir'.
+
+
+If your aliases have arguments, e.g.
+$ alias sc "search *.c
+problems arise when you try to specify options. e.g. case sensitivity:
+$ sc -c "hello world
+this will obviously not work. That's what @pickopts is good for:
+$ alias sc "%a search @pickopts( $a ) *.c @pickargs( $a )
+
+
+Once you have more aliases, it is useful to keep them sorted.  You might
+also document them: Create a file 'aliases.doc', and perform
+$ set _man aliases.doc csh.doc
+That way, you can document them in a separate file.
+
+
+If you would like to create aliases that accept arguments, you can implement
+them using 'if -o'.
+$ alias good "%a if -o v $a;echo -n "very ";endif;echo good work, @arg( $a )
+$ good sam          --> good work, sam
+$ good -v sam       --> very good work, sam
+
+
+'cat' can be used to create small text files:
+$ cat >myfile
+hello
+[CTRL-\]
+The key combination CTRL-\ creates an end-of-file character.
+
+
+    FUNCTIONS
+
+
+@age is very useful for archiving scripts:
+$ foreach i ( * ) "if @age( $i ) > 30;cp -m $i backup:;endif
+
+
+@clinum can be used for making 'break' and 'pri' more flexible:
+$ alias break "%a break @clinum( $a )
+Now you can, for example, 'break cc'. Cli numbers are still allowed.
+
+
+@complete simulates the effect of tab file name completion. That
+way, you need no longer press TAB for it:
+$ alias edit "%a ced @complete( $a * )
+
+
+@confirm can be used for a safe 'rm':
+$ alias rm "%a rm @confirm( $a )
+
+
+@howmany is useful at startup:
+$ if $howmany = 1;window -l;endif
+
+
+@intersect, @union and @without are well suited for a lot of applications.
+If you store, for example, all files a friend of yours owns, in the variable
+$him, (he can do a 'dir -np .../ >temp', you then do a 'readf him <temp'),
+and your files in $me, then you can learn what he has and you don't using
+$ echo @without( $him , $me )
+To ignore different path names, use
+$ set him @basename( $him )
+If you have the the file names without the path, you can find out the path
+by 'search'ing the file temp.
+
+
+@opt and @arg are needed whenever you have an alias that already specififies
+some arguments, but allows the user to specify additional options.
+$ alias sc "%a search @opt( $a ) *.c @arg( $a )
+
+
+@volume can be used to test if there is a disk in a certain drive. It will
+suppress requesters and return an empty string if no disk present.
+
+
+    VARIABLES
+
+
+$_except can be made local. In that case you have a special exception 
+handling for the current alias or batch file.
+
+
+$_man may contain the names of more than one .doc file. That way, you
+may add documentation to your own aliases.
+
+
+When working with large files in pipes, you might want to set $_pipe
+to a directory on your hard disk.
+
+
+    PARSER
+
+
+If you need to append a string to a variable, you can do it like this:
+$ set foo bar
+$ echo $foo""bara    --> barbara
+The "" isn't necessary if the first character of the string to be appended
+is neither a letter nor digit nor _.
+
+
+To make sure no internal command is executed, capitalize the first letter
+of your command:
+$ Dir ram: ALL
+
+
+To override existing aliases to a command, enter:
+$ alias echo "xxxxxx
+$ \echo hello    -->  hello

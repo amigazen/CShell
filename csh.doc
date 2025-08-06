@@ -1,0 +1,3435 @@
+
+		INSTRUCTIONS FOR C-SHELL VERSION: 5.50 (July 1996)
+		==================================================
+
+  Contents
+  --------
+
+
+	O.	Installation
+	I.	Description (availability, credits, disclaimer)
+	II.	Overview of major features
+	III.	Restrictions
+	IV.	Pipes
+	V.	Command Pre-processor
+	VI.	Command Line Editing
+	VII.	Function Keys
+	VIII.	Shell Commands
+	IX.	Special Set Variables
+	X.	Functions
+	XI.	Miscellaneous
+	XII.	Example source files
+	XIII.	Default values
+	XIV.	Object oriented features
+	XV.	Keymaps
+	XVI.	Scrolling
+
+
+
+O.  Installation
+----------------
+
+This program requires at least AmigaOS 2.04 (KS37.175, WB37.67) or higher.
+
+For  online  help  inside csh, assign CSH:  somewhere and put csh.doc there.
+Then  you can use the 'man' command for any desired command.  Press the HELP
+key for a command list.
+
+You  can  simply  invoke  csh  from  the  command line or at the end of your
+startup-sequence,  because  csh is, from the AmigaDOS standpoint, not a true
+shell  like  l:shell-seg.   Nevertheless, csh is 'pure', so if your archiver
+forgot to set the 'p' bit, do it right now.
+
+Proposed final setup:  If you want to make csh resident, do the following:
+
+  1. Copy csh anywhere on your (hard)disk, e.g. dh1:tools
+  2. Make sure your s:startup-sequence contains:
+	resident dh1:tools/csh add
+	csh
+  4. In s:.login, put any commands to be called only once, like setmap,
+	assign, setclock. This is a shell script, use # for comments, and
+	don't use .key type commands.
+  5. In s:.cshrc, you put any commands that need to be executed on every
+	invocation, like 'alias', 'set' and so on.
+  6. Put the following to s:cli-startup and s:shell-startup, so csh will be
+	started in any window opened by NewCLI, NewShell or from workbench:
+		csh
+		endcli
+
+
+Additionally,  I  recommend  to assign CSH:  somewhere and put your docs and
+CShell scripts there.  You can do the assign from inside the shell, it's not
+needed at startup.
+
+The file s:.cshrc is executed on every startup (of csh) if it exists,
+the file s:.login only on csh's first invocation after boot-time,
+the file s:.logout is executed on every termination (of csh).
+
+
+
+I.  DESCRIPTION
+---------------
+
+This version of Shell is the successor of:
+	Shell V2.04 (C)Copyright 1986, Matthew Dillon, All Rights Reserved
+	Shell V2.04M-V2.07M by Steve Drew
+	Shell V2.08MI, V3.xxA and V4.xxA by Carlo Borreo & Cesare Dieni
+	Shell V5.xxL by U. Dominik Mueller
+	Shell V5.20+ by Andreas M. Kirchwitz
+
+
+
+Responsible for the V5.20+ series of Cshell is:
+
+	Andreas M. Kirchwitz
+	Seesener Str. 69
+	D-10709 Berlin
+	Germany
+
+	UUCP/Internet: csh-fan@zikzak.in-berlin.de
+	            or csh-fan@zikzak.snafu.de
+
+Send wishes, detailed bug reports (and the beer bottles :) to the above
+address. Postcards welcome!
+
+For bug reports, I need your Csh version number and a reproducable bug
+generation example.
+
+If you report Enforcer hits please send the complete Enforcer and SegTracker
+output. Otherwise it's of no earthly use.
+
+The V5.20+ series is an ARP-free, OS-2.x-only version of Cshell.
+
+Please check the 'restrictions' chapter before reporting any bugs and add
+your CShell version and a description of your configuration.
+
+You may distribute this program unmodified and for non-profit only.
+   *** YOU MAY NOT MODIFY THIS PROGRAM AND REDISTRIBUTE IT ***
+Please contact me if you want to make changes.
+
+
+AVAILABILITY
+------------
+
+CShell can always be downloaded at the AUGL BBS.  Some additionals parts
+(French documentation) are available there, too.
+
+For those who want to get it per FIDO file request, the archive is always
+named like 'csh513.lzh' for CShell 5.13 and 'csh513src.lzh' for its source.
+
+CShell is available via FTP from AmiNet ftp.wustl.edu (and mirrors) in the
+directory /pub/amiga/shell/ (the archive names are the same) and via E-Mail
+from "mail-server@cs.tu-berlin.de" in the same directory.
+
+
+CREDITS
+-------
+
+Arexx is a program by William Hawes.
+Cygnus Ed Professional (C) 1988 CygnusSoft Software.
+
+Thanks to:
+
+Matt Dillon, Steve Drew, Calro Borreo, Cesare Dieni and U. Dominik Mueller
+for the previous versions of Csh.
+
+Ralph Babel, Eddy Carroll, Gary Duncan, Randell Jesup, Steve Koren, Tim
+MacKenzie, Axel Roebel, Mike Schwartz for their code contributions and
+suggestions.
+
+Michael Beer, Carl Johan Block, Hubert Feyere, Magnus Heldestad, Carsten
+Heyl, Alex Liu, Declan McArdle, Svante Eriksson, Luke Mewburn, Peter Orbaek,
+Allard Siemelink, Roddi Walker, Shimon Weissman and the unknown Swedish guy
+who found the double-LF bug for their bug reports and feedback.
+
+Roy Haverman, Martin Horneffer, Hans-Christian Huerlimann, Daniel Pfulg,
+Patrizio Rusconi, Christian Schneider and especially Markus Illenseer for
+the German translation of the doc.
+
+Olivier Berger for the French translation of the doc.
+
+
+DISCLAIMER
+----------
+Cshell (csh) is © Copyright 1991-1996 by Andreas M. Kirchwitz and all
+previous authors mentioned in the "CREDITS" section. All rights reserved.
+
+Any possesor of this version of "Cshell (csh)" for the Amiga is hereby
+granted a non-exclusive license permitting its use and/or redistribution,
+subject to the following terms and conditions.
+
+Permission is hereby granted to freely redistribute this version of
+"Cshell (csh)" via electronic bulletin board systems (BBS's), freely
+redistributable disk collections (such as provided by Fred Fish), service
+bureaus (BiX, GEnie, CompuServe, etc), and networks such as USENET, BITNET,
+and Internet, provided that such distribution includes this unmodified
+License, and all of the documentation files (README and .doc files), in
+addition to the executable, and with all copyright notices intact. Access
+to the source code must also be available and allowed.
+
+This archive may be freely redistributed, but only in totally unchanged
+state, i.e. no files can be added, deleted, modified etc. All copyright
+notices in the program and its documentation must remain on their places.
+Also ".displayme" and other files, usually with "wonderful" ANSI graphics,
+so obvious at various BBS's, cannot be added.
+
+Use of the "Cshell (csh)" executable and docmentation in any environment,
+commercial or otherwise is not restricted, and no fee shall be required for
+said use. The use of the source code is also permitted in other freely
+redistributable works, provided proper acknowledgement of the authors is
+given. The use of the source code in a commercial product is prohibited
+without prior written permission of the author.
+
+Without prior written permission from the author, it is prohibited to sell or
+otherwise convey this version of "Cshell (csh)" for monetary or other forms
+of compensation, other than the customery service and/or duplication fees as
+may be charged by the distribution mechanisms identified above.
+
+It is further prohibited, without prior written permission from the author,
+to include this version of "Cshell (csh)" in whole or in part, in the
+distribution of any commercial hardware or software package, or component
+thereof.
+
+This version of "Cshell (csh)" is provided "as is", without express or
+implied warranty. The author makes no claim or representation about the
+suitability of this software for any purpose.
+
+The author disclaims any and all warranties with regard to this software,
+including all implied warranties of merchantability and fitness. In no event
+shall the author be liable for any special, indirect, or consequential
+damages, or any damages whatsoever resulting from loss of use, data, or
+profits, whether in an action of contract, negligence, or other tortious
+action, arising out of or in connection with the use or performance of this
+software.
+
+
+
+II. OVERVIEW
+------------
+
+Shell provides a convenient AmigaDos alternative command interface.  All its
+commands  are internal and thus it does not rely on the c:  commands for any
+functionality.
+
+Major features include:
+	- freely programmable command line editing
+	- simple history
+	- piping
+	- aliases with arguments
+	- variables & variable handling (embedded variables)
+	- file name expansion via wild carding ('?', '*' and more)
+	- conditionals (if/else etc..)
+	- source files  (w/ gotos and labels)
+	- tab file name completion
+	- object oriented features (file classes, actions)
+	- many built in commands to speed things up
+	- full functionality on VT terminals
+
+CShell runs on minimum stack, for recursive aliases and source files better
+increase stack to 20K or more.
+
+If you use CShell for the first time, remember the following:
+	- CShell internal commands must be lowercase & can be abbreviated
+	- AmigaDOS command 'Execute' causes some trouble. You cannot
+	  redirect it, you must not rename it, and you get no return code.
+	  You can also use 'source' to start your scripts, but you'll have
+	  to rewrite them a bit. Besides the '.key'-type commands, 'source'
+	  is downward compatible with 'Execute'.
+	- You can always get more information on a command if csh.doc is
+	  in the current directory or in csh: (you will be able to modify
+	  this) and you enter 'man <command>'
+	- The wild card #? doesn't work. Use *
+	   (#? only works if you "escape" it... better use * :-)
+
+
+III. RESTRICTIONS
+-----------------
+
+The c:Execute command cannot be redirected, does not return error codes, and
+might cause other problems. It will not work at all if it has been renamed.
+
+The  VDK: handler and Frank Seidel's BootRam-Handler have a bug with setting
+file  dates,  so  when  using  the copy command you should try the -d and -p
+switches, otherwise your file date will be bad. (This is not a shell bug)
+
+If  using  it with conman you may consider starting shell with the -a switch
+to  turn  off  shell's  command line editing and use conmans instead. You'll
+lose, however, many shell features like file name completion.
+
+CB-handler  (a tool that installs a scrollbar in the CLI window) is not 100%
+compatible  with  cshell.  The log will not always represent the real screen
+contents.
+
+Don't  use  the  "Iconify" feature of KingCON (a CON-Handler replacement that
+gives  you  scrollbar  and  other  features in CLI windows). Don't ignore the
+warning,  KingCON  gives you when iconifying a Cshell window. This will crash
+your  system  because Iconify makes Cshell's internal window pointer invalid.
+Start Cshell with option "-a" or "-t" to use "Iconify" safely.
+
+
+IV. NOTES ON PIPES
+------------------
+
+    PIPES
+	PIPES  have  been implemented using temporary T:  files.  Thus, you
+	should be  careful  when  specifying  a 't:*' expansion as it might
+	include the temporary files. These files are deleted on completion
+	of the pipe segment.
+
+	The file names used are completely unique, even with multiple shell
+	running simultaneously.
+
+	My  favorite  new  feature is the fact that you can now redirect to
+	and  from,  and pipe internal commands.  'echo charlie >ram:x', for
+	instance.  Another favorite:
+
+	echo "echo mem | csh" | csh
+
+	No BCPL program should be output-append redirected (>>).
+
+
+V.  COMMAND PRE-PROCESSOR
+-------------------------
+
+    PREPROCESSING
+	Preprocessing is done on the command line before it is passed on to
+	an internal or external routine:
+
+	^c	where c is a character is converted to that control
+		character. Thus, say '^l' for control-l.
+
+	\233	insert character code 233 octal. Do not use values between
+		200o and 232o, as they have special meanings. \240 is the
+		word separator.
+
+	$name	where name is a variable name. Variable names can consist
+		of 0-9, a-z, A-Z, and underscore (_).  The contents of the
+		specified variable is used.  If the shell variable doesn't
+		exist, csh tries to find a local or global (ENV:) variable
+		of the same name. If that fails, too, "$name" is inserted.
+		That is, if the variable 'i' contains 'charlie',
+		then '$i' -> 'charlie'.
+		If the variable 'i' doesn't exist, then '$i' -> '$i'.
+
+	;	delimits commands.   echo charlie ; echo ben.
+
+	' '	(a space). Spaces delimit arguments.
+
+	"string" a quoted string. Trailing quotes are optional.
+		For instance, if you want to echo five spaces and an 'a':
+
+		echo      a       -> a
+		echo "    a"      ->      a
+
+		See also builtin variable "_cquote".
+
+	\c	override the meaning of special characters.
+		'\^a' is a circumflex and an a rather than control-a.
+		To get a backslash, you must say '\\'.
+
+		also used to overide alias searching for commands.
+
+	>file	specify output redirection.  All output from the command is
+		placed in the specified file.
+
+	>>file	specify append redirection
+		(Does not work with BCPL programs).
+
+	<file	specify input redirection. The command takes input from the
+		file rather than the keyboard (note: not all commands
+		require input; it makes no sense to say 'echo <charlie'
+		since the 'echo' command only outputs its arguments).
+
+	<>file	specify input AND output redirection. The file must be
+		either "NIL:" or an interactive stream (eg, a console
+		window: <>CON:////InOut).
+
+	|	PIPE specifier.  The output from the command on the left
+		becomes the input to the command on the right.  The current
+		SHELL implementation uses temporary files to store the data.
+
+	!!	execute the previously executed command.
+	!nn	(nn is a number).  Insert the history command numbered n
+		(see the HISTORY command)
+	!partial search backwards through the history list for a command
+		which looks the same as 'partial', and execute it.
+
+	#	enter comment.  The rest of the line is discarded.
+		(note: \# will, of course, overide the comment character's
+		       special meaning)
+
+	{e hi;e ho} executes two commands as one, so they can be redirected
+		together (see ALIAS command). The trailing curly brace is
+		optional.
+
+	$(foo)	insert the stdout of the command 'foo' at this position of
+		the command line. Every line of the output will count as one
+		argument. The closing parenthesis is optional.
+
+	`foo`	insert the stdout of the command 'foo' at this position of
+		the command line. Every blank separated word will count as
+		one argument. Leading, trailing and multiple blanks will be
+		removed. The trailing backtick is optional.
+
+	$nn	(nn is a number).  Cshell scripts only!
+		Insert argument number nn for $nn.  Thus, $1 becomes the
+		first argument, $2 the second, $3 the third and so on.
+		$0 is the name of the command (script).  If there's no
+		argument nn then $nn remains unchanged (unset variable).
+
+	$#	Number of arguments.  Cshell scripts only!
+		For example: if $# is 3 then $3 will be the highest
+		meaningful variable for an argument.
+
+	--	stop option parsing here. Works for internal commands only.
+		Example: rm -- -x will remove the file '-x'
+
+	Please note the subtle differences between
+		alias count {echo one;echo two}
+		alias count "echo one;echo two
+	The first form will create an alias that contains a local alias. The
+	other will create a plain alias. Also, things within braces will not
+	be parsed more than once, therefore a backslash needs not be pre-
+	ceded by a pair of backslashes. Thus the commands look the same as
+	if they were to be typed in at the prompt. To echo lots of '#',
+	either use:
+		forever {echo \#
+		forever "echo \\\#
+	A block can spread over several lines. Refer to the SOURCE command.
+
+
+VI. COMMAND LINE EDITING
+------------------------
+
+	o The command line can be up to 255 chars.
+	o Inserts  and  deletes  are handled correctly over multiple lines.
+	o The script 'menu.sh' installs an intuition menu that contains most
+	  editing functions
+
+    EDITING
+
+	-- MOVING --
+	Left Arrow	  One character left
+	Right Arrow	  One character right
+	Shift-Left Arrow  One word left
+	Shift-Right Arrow One word right
+	ESC-Left Arrow	  Beginning of line (^A) (^Z)
+	ESC-Right Arrow	  End of line       (^E)
+	-- DELETING --
+	Backspace	  Previous character
+	Del		  Character under cursor
+	ESC-Backspace	  Previous word     (^W)
+	ESC-Del		  Next word
+	ESC-x-Backspace	  To start of line  (^B)
+	ESC-x-Del	  To end of line    (^K)
+	ESC-d		  Entire line       (^X)
+	-- HISTORY --
+	Up Arrow	  Recall previous commands
+	Down Arrow	  Recall commands
+	Shift-Up Arow	  Get history from partial (or number)
+	Shift-Down Arrow  Go below last command of history
+	ESC-Up Arrow	  Get start of history
+	ESC-Down Arrow	  Get end of history
+	ESC-!		  Get history from partial (or number)
+	^T		  Insert tail (all but first word) of previous line
+	^P		  Duplicate previous word (useful for mv)
+	-- COMPLETION --
+	TAB		  Inserts first matching file name
+	Shift-TAB	  Inserts longest common substring
+	ESC-TAB		  Inserts all matching file names (also ESC-*)
+	ESC-c		  Does a quick cd on left word (TAB for cycling)
+	ESC-~		  Inserts the last current directory
+	^D		  Shows all files that match a pattern (also ESC-=)
+	ESC-p		  Insert first/next matching program name
+	ESC-P		  Shows all matching program names
+	-- EXECUTING LINE --
+	Return		  Executes line
+	ESC-Return	  Executes this line of history & brings up next one
+	^N		  Next line. Don't exec this one but store history
+	^\		  EOF (directly exits)
+	-- MISCELLANEOUS --
+	^L		  Retype current line.
+	^O		  Echo a ^O
+	^R		  Repeat last command (don't play with this)
+	^U		  Undo/Redo last edit
+	^V		  Quote next char
+	ESC-i		  Toggle Insert/Overwrite
+	f1-f10		  Execute command if variable exists.
+	F1-F10		  More commands (Shifted f keys).
+	Help		  Invokes help command
+
+Whenever  the  cursor is placed on or directly after an incomplete file name
+and   you   press  TAB,  CShell  inserts  for  the  first  filename  (sorted
+alphabetically) that matches the name part already typed.  Any wildcards are
+allowed  here, if none are given, '*' is appended.  Immediately pressing TAB
+again  brings  up  the next file name that matched the substring.  Shift-TAB
+will  only  insert  the  as much as is common to all files that matched your
+abbreviation.  If pressed again, behaves just like TAB.  ESC-Tab inserts the
+name  of the directory where you would have ended up with a quick cd to that
+substring.
+
+Note that ^D now means 'quit batchfile' like under AmigaDOS and is no longer
+used for quitting CShell.  If you want it back, enter 'keymap 0 4=41'
+
+The  CTRL  keys  FGVY  are unset, feel free to map them to any function (see
+chapter XV).  You can also remap all preset keys.
+
+VII. FUNCTION KEYS
+------------------
+
+    FUNKEY
+	Function keys now insert text to the current position on the command
+	line. They may be terminated with a ^M (return). f1 would be non-
+	shifted where as F1 is shifted.
+	Most of functions key have a default definition, but it may be
+	changed.
+
+		$ set f1 dir df0:^M
+
+	will add the text 'dir df0:<return>' to the current line.
+
+		$ set f1 dir
+
+	would only add 'dir' you could then enter ' df0:<return>'
+
+
+VIII. SHELL COMMANDS
+--------------------
+
+    STARTUP OPTIONS
+	First to start shell from a CLI:
+
+	csh [-abcCfiknstv] [-c command;command]
+	csh [-abcCfiknstv] [batchfile1 ... batchfileN]
+
+	 -a  AUX: mode. No command line editing and text highlighting
+	      (window opening is not forced and AUTO-windows don't lose
+	       the ability to be closed)
+	 -b  starts shell in background, which means only task priority -1.
+	 -c  allows execution of one command line and then exits out
+	     of  shell.   This  is  useful for running an internal shell
+	     commands in the background or from an external application:
+		run csh -c "dir df0:; copy -r df0: df1: >nil:; echo Done"
+	 -C  same as -c, but the command line is not parsed twice. This
+	     allows passing of file names with blanks within.
+		run csh -C rm "Ram Disk:tempfile"
+	 -f  starts shell in foreground, which means only task priority 1.
+	     you might reset this prioritiy to 0 at the end of your .login
+	 -k  sets _nobreak before doing anything
+	 -L  suppresses starting of s:.logout
+	 -m  sets _nomatch  (which is unset by default)
+	 -M  don't clear menus (especially for KingCON),
+	     by default CSH clears menus of its window
+	 -n  suppresses starting of s:.login
+	 -N  suppresses starting of s:.cshrc
+	 -s  globally enables the asterisk * as alias for #? in AmigaDOS 2.0
+	     This means you can use * inside file requesters as well.
+	     (obsolete option -- * is default -- #? is still allowed !!)
+	 -t  terminal mode. You can use command line editing and text high-
+	     lighting on a VT100 compatible terminal. To swap backspace
+	     and DEL, refer to the 'keymap' command
+	      (window opening is not forced and AUTO-windows don't lose
+	       the ability to be closed)
+	 -v  sets _verbose to 'hs' before doing anything.
+	 -V  send only VT100 compatible control sequences
+	      (no special Amiga control sequences)
+	 -w  don't fetch pointer of window Cshell is running in,
+	      eg, for running Cshell remote or with KingCON (iconify)
+	      (menus, titlebar and some window related commands disabled)
+
+    COMMAND EXECUTION
+
+	Internal shell commands are case sensitive and may be abbreviated.
+	Also commands buffered with "rehash" may be abbreviated. This can
+	be toggled with the variable "_abbrev".
+
+	The first argument is the command-name... here is (in order) how
+	Shell tries to execute it:
+
+	1)  The alias list is searched for an alias with an exactly
+	    matching name.
+	2)  Internal commands list is scanned for a command even partially
+	    matching name (so you can, for instance, say resi for resident;
+	    however, you should specify enough of a command to be unique).
+	3)  Then, the list of functions is scanned for a command that
+	    matches completely. If one is found, the result of the function
+	    is echoed to stdout.
+	4)  Now the command is assumed to be external.
+	    Arguments with blanks, semicolons or empty strings will be
+	    surrounded by quotes.
+	5)  If the file is a directory, a 'cd <file>' will be performed to
+	    it.
+	6)  AmigaDOS resident list are scanned for it (you can use Shell's
+	    'resident' command to add/remove a file in the DOS list).
+	7)  If the file is in the current directory and it's executable, it
+	    is started.
+	8)  Then it is searched in the AmigaDOS path and c:
+	9)  Now, the shell path ($_path) is searched. If it's found and
+	    executable, it's started. If it has the 's' bit set, it will
+	    be executed using the appropriate shell. See FOREIGN SHELLS
+	10) If there exists a file with the suffix '.sh' and the same root
+	    in the current directory or in the shell path, it is 'source'd.
+	11) Then the variable _rxpath is examined. If there exists a file
+	    with the suffix '.rexx' and the same root in the current direc-
+	    tory or in '$_rxpath', 'RX <file>' will be performed.
+	12) If all failed, an 'exec' action is sent to the file. See chapter
+	    XIV for more info on classes and actions.
+
+	To enforce that the external 'dir'-command is used, enter 'Dir'. It
+	is a good habit to uppercase the first letter of all external com-
+	mands, even if this is not necessary.
+
+	AUTOMATIC SOURCING may be accomplished by naming shell scripts with
+	a .sh suffix.  Thus, if you say 'stuff' and the file 'stuff.sh'
+	exists in your current or anywhere in Shell search path (NOTE:
+	won't be found in the AmigaDOS path), it will be SOURCED with all
+	arguments you have given placed in the $_passed variable.  This is
+	equivalent to typing 'source stuff.sh'
+
+	FOREIGN SHELLS are supported through key characters at the beginning
+	of their scripts.  If a file in the command search path has the s-bit
+	set, the first few bytes are read. If the first two are either '#!'
+	or ';!', the rest of the first line will be interpreted as the name
+	of the shell that is supposed to execute the script.
+	If they are '/*', the command 'RX' is used, if none of the above,
+	'c:Execute'. Example:
+	  #!SKsh -c source
+
+    WILDCARDS
+
+	Most shell commands will accept multiple arguments that can
+	be as a result of wild card expansion.  Also when calling
+	an external command shell will first expand any wild cards
+	to separate arguments.  If you wish to have the external command
+	handle it's own wild carding you will need to insert quotes
+	around the special wild card characters or use an alias (see
+	explanation of 'alias')
+
+	eg.
+		arc a new.arc *.txt	- shell will expand and pass to arc
+		arc a new.arc "*.txt"	- let arc expand the wild cards.
+		alias arc "*a Arc $a"	- now shell will never expand
+
+	The patterns are fairly extensive, and approximate some of the
+	ability of Unix/grep "regular expression" patterns.  Here are the
+	available tokens:
+
+	?	Matches a single character.
+	#	Matches the following expression 0 or more times.
+	(ab|cd)	Matches any one of the items seperated by '|'.
+	~	Negates the following expression.  It matches all strings
+		that do not match the expression (aka ~(foo) matches all
+		strings that are not exactly "foo").
+	[abc]	Character class: matches any of the characters in the class.
+	[~bc]	Character class: matches any of the characters not in the
+		class.
+	a-z	Character range (only within character classes).
+	%	Matches 0 characters always (useful in "(foo|bar|%)").
+	*	Synonym for "#?", not available by default in 2.0. Available
+		as an option that can be turned on.
+
+	"Expression" in the above table means either a single character
+	(ex: "#?"), or an alternation (ex: "#(ab|cd|ef)"), or a character
+	class (ex: "#[a-zA-Z]").
+
+	Additional wildcards allowed:
+
+	.../*	recursive search down ALL sub directories from current level
+	!	synonym for ~, supported for compatibility
+	&	prefixed to patterns, ask confirmation for each file
+	~	the previous current directory (if separated)
+	Note that a pattern must contain a '?' or a '*', otherwise the other
+	special characters are not recognized. Furthermore, you cannot spe-
+	cify a single '?' as a pattern in the first argument to a command,
+	as this will be passed on to the command in order to show its usage.
+
+	If pattern.library is present it LIBS:, it will be used for the
+	matching. (disabled, now Cshell always uses dos.library)
+
+	Examples:
+
+	df0:.../*	all files in all directories on df0:
+	df0:.../!*.info	full directory tree of df0: but exclude
+			any ugly .info files.
+	!*.o !*.c	will result in ALL files matching since what
+			doesn't match the !*.o will match the !*.c
+	df1:&*		all files in root of df1:, but ask
+			confirmation for each
+	*.[co]		all files ending in .c or .o
+	~*.[co]		all files NOT ending in .c nor in .o
+	~		the previous current directory
+	~/*.c		all .c files in the previous current directory
+	~//		the parent of the previous current directory
+	.		the current directory
+	./foo.c		the same as foo.c
+	..		the parent of the current directory
+	../foo.c	the file foo.c in the parent directory
+
+	Note that some commands prevent wild card expansion. These are:
+	  - dir, rpn, whereis, window
+	Those commands will expand the wild cards themselves. This is why
+	  dir @without( *.? , *.o )
+	will not work. Instead use:
+	  set arg @without( *.? , *.o );dir $arg
+
+	There is one exception to the rules given above: A single '?' as
+	the first argument will *not* expand in order to allow you to get
+	the usage of CLI and csh commands easily.
+
+	Due to implementation limitations, patterns are only recognized
+	if they contain *, ?, [ or ]. To let Cshell expand patterns which
+	does not contain one of these chars just append "[]" to the
+	pattern (this will NOT change the meaning of the pattern!)
+
+    ENVIRONMENT VARIABLES
+
+	Cshell uses an Amiga specific CSI sequence to get the current
+	window dimensions (columns and lines).  If you've connected
+	Cshell to a remote terminal which is not an Amiga, you can change
+	the default window dimensions (80x25) with the environment
+	variables "COLUMNS" and "LINES".
+
+	This is also useful if Cshell is not connected to a terminal
+	(eg, redirection to a file) and cannot determine window size
+	automatically.
+
+LIST OF COMMANDS:
+-----------------
+
+    ABORTLINE
+
+	Usage	: abortline
+	Example	: echo a;abort;echo b
+	Results	: a
+
+	Causes the rest of the line to be aborted. Intended for use in
+	conjunction with exception handling.
+
+    ACTION
+
+	Usage	: action [-a] actionname file [arguments]
+	Example : action extr csh515.lzh csh.doc
+
+	Sends an action to a file. See chapter XIV CLASSES
+
+	Options	:
+	 -a (abort) returns 0 if failed and 1 if successful. Otherwise,
+	            normal error codes (10 or 11) are returned
+
+    ADDBUFFERS
+
+	Usage	: addbuffers drive
+		  addbuffers drive buffers [drive buffers ...]
+	Example	: addbuffers df0: 24
+
+	Just like AmigaDOS addbuffers command, causes new buffers to be
+	allocated for disk I/O.  Each buffer costs 512 bytes of memory,
+	CHIP memory if a disk drive. Buffers may be negative (to remove
+	buffers from a drive).
+
+	To show current amount of buffers use "addbuffers drive"
+	or "addbuffers drive 0".
+
+    ADDPART (or TACKON)
+
+	Equivalent to TACKON.
+
+    ALIAS
+
+	Usage	: alias [name [command string] ]
+	Example	: alias vt "echo Starting VT100;run sys:tools/vt100"
+
+	Sets a name to be a string. You can alias a single name to a set
+	of commands if you enclose them in quotes as above. By simply
+	typing vt, the command line above would be executed.
+
+	Aliases may call each other, but direct recursion is prohibited,
+	so the following works: alias ls "ls -s"
+	To prevent alias replacement, enter: \ls
+
+	If you run aliases into background, they will be recursively
+	resolved. This may result in endless loops, if the name of the
+	alias and the command it runs are equal. Use absolute pathes or
+	mix the case of the command to avoid recursion.
+
+	By typing "alias name", you will get the alias for that name, while
+	with "alias" you get a list of all alias.
+
+	ARGUMENT PASSING TO AN ALIAS:
+
+	Usage	: alias name "%var[%var...] [ command_string ]"
+		  alias name "*var[%var...] [ command_string ]"
+	Example	: alias xx "%q%w echo hi $q, you look $w
+		  xx Steve great today
+	Results	: hi Steve, you look great today
+
+	The second form of the alias command allows passing of arguments
+	to any position within the command string via use of a variable
+	name. To pass arguments to the end of a command string this method
+	is actually not necessary. These variables are local, so they don't
+	destroy another variable with the same name.
+	If you specify multiple arguments, every argument will be assigned
+	one word, and the last argument will be assigned the rest of the
+	command line.
+
+	Using a '*' instead of the first '%' prevents wild card expansion:
+		alias zoo "*a zoo $a
+	To expand the wild cards after you got them, use
+		exec set a $a
+
+	IMPLICIT ALIASES:
+
+	Usage	: {command;command}
+		  {%var command;command} arg arg
+	Example	: {%tmp echo $tmp $tmp} hello    --> hello hello
+
+	Curly braces define temporary aliases. They can be redirected as
+	a whole, can have arguments and local variables. They count as
+	one argument, even if there are blanks inside (as with quotes), and
+	they may be nested. Complex alias definitions can use the braces
+	instead of quotes, although this will add some calling overhead.
+	The closing curly brace is optional if at the end of line.
+	Example:
+
+	alias assert {e "Are you sure? ";input -s sure
+
+    ASCII
+
+	Usage	: ascii [-ho]
+		  ascii [-ho] string
+
+	If called without arguments, ascii outputs a complete ASCII table.
+	Given a string, shows each character in ASCII.
+
+	Options	:
+	 -h shows numbers in hexadecimal
+	 -o shows numbers in octal
+
+    ASSIGN
+
+	Usage	: assign
+		  assign logical
+		  assign [-adlnp] logical1 physical1 [log2 phy2 ... ]
+
+	The first form shows all assigns.
+	The second form kills one assign.
+	The third form assigns logical1 to physical1 and so on.
+
+	Options	:
+	 -a adds a new path to an existing assign
+	 -d creates a deferred (late-binding) assign
+	     (identical with old option -l)
+	 -p creates a path (non-binding) assign
+	     (identical with old option -n)
+
+	For definition of add/defer/path, refer to your AmigaDOS manual.
+
+    BASENAME
+
+	Usage	: basename var path [path ...]
+	Example	: basename x df0:c/Dir	# sets x to "Dir"
+
+	Sets var specified to basenames of paths.
+
+    CAT (or TYPE)
+
+	Usage	: cat [-n] [file file....]
+	Example	: cat foo.txt
+
+	Options	:
+	 -n output numbered lines.
+
+	Type the specified files onto the screen.  If no file is specified,
+	standard input (STDIN) is used (note: ^\ is EOF). "cat" is meant to
+	output text files only, but you can also join (concatenate) files
+	together with this command (like under UNIX) - although for this
+	purpose the built-in command "join" (see there) is much more faster.
+
+    CD
+
+	Usage	: cd [path]
+		  cd -g device1 [device2 [device3 ...]]
+
+
+	Options	:
+	 -g generate a list of all directories on the given devices.
+
+	Change your current working directory.  You may specify '..' to go
+	back one directory (this is a CD specific feature, and does not
+	work with normal path specifications).
+
+	In most cases, you won't have to use the CD command. Just type
+	the desired directory at the prompt (very handy in conjunction with
+	file name completion). Typing a ~ alone on a command line cd's
+	to previous current directory.
+
+	There are two situations left when you still need it:
+
+	Entering 'cd *tem' will cd to the first name matched.
+
+	The second form generates a list (an ASCII file) of all direc-
+	tories on the given devices. It will be stored in the file given
+	in $_qcd (default: 'csh:csh-qcd'). Note that this ASCII file will
+	not be merged but overwritten. Once you have generated this file,
+	you can cd to any directory on your harddisk(s) even if it's not
+	in the current directory.
+	If you have two directories of the same name and you use one of
+	them more, move the more important one to the beginning of the
+	qcd file. You might also sort the file.
+	It is legal to type just an abbreviation of the directory name
+	you want to cd to. No asterisk '*' necessary. If you end up in
+	the wrong directory, cd to the same directory again (best done
+	by Cursor-Up + RETURN). You will cycle through all directories
+	that matched the given abbreviation. The other possibility is to
+	specify the full name of the parent directory: cd devs/keym
+	You may also add devices and assigns, so if 'PageStream:' is one
+	line in the qcd-file, a cd to 'page' is successful.
+
+	CD without any arguments displays the path of the directory you
+	are currently in.
+
+    CHGRP
+
+	Usage	: chgrp group file1 ... filen
+	Example	: chgrp 42 myfile
+
+	Set group-id (0-65535) or group-name of specified files.
+	Name-to-ID mapping does only work with "MultiUser".
+
+    CHMOD
+
+	Usage	: chmod [u|g|o|a][+|-|=][flags] file1 ... filen
+	Example	: chmod u+rwe myfile
+
+	Set AmigaDOS file protection flags for the file specified.
+	Valid flags are h, s, p, a, r, w, e, d.  (x is the same as e)
+
+	Ownership:
+	  u  Set specified bits for User (aka Owner)
+	  g  Set specified bits for Group
+	  o  Set specified bits for Other (not User, not Group)
+	  a  all, alias for "ugo" (User/Group/Other)
+	Specifying no ownership is equal to 'u'.
+
+	Modes:
+	  +  Set specified bits, leave all others
+	  -  Clear specified bits, leave all others
+	  =  Set specified bits, clear all others
+	Specifying no mode is equal to '='.
+
+	Archive bit cleared by default!
+
+	Note: This command is equivalent to "protect" except that the
+	      arguments for filename(s) and flag(s) are reversed.
+
+    CHOWN
+
+	Usage	: chown [-g] owner file1 ... filen
+	Example	: chown 42 myfile
+
+	Options	:
+	 -g set GID of the file to primary group of user (needs MultiUser)
+
+	Set owner-id (0-65535) or owner-name of specified files.
+	Name-to-ID mapping does only work with "MultiUser".
+
+    CLASS
+
+	Usage	: [-n] name {type=param} [ "actions" {action=command} ]
+	Example : class zoo offs=20,dca7c4fd ext=.zoo actions view="zoo l"
+
+	Defines a new class of files and the actions to be taken on them
+	in various cases, or shows old definitions if given no arguments.
+	See section XIV: OBJECTS
+
+	Options	:
+	  -n (new)  forgets old definitions
+
+
+    CLOSE
+
+	Usage	: close [filenumber]
+
+	Close the specified file opened by open. Without filenumber, closes
+	all open files. See open and flist for more info.
+
+    CLS
+
+	Usage	: cls
+
+	This is an alias. It only clears the screen, but also works on a
+	terminal (echo ^L doesn't).
+
+    COPY (or CP)
+
+	Usage	: copy [-udfpmoax]  file file
+	or	: copy [-udfpmoax]  file1 file2...fileN dir
+	or	: copy [-rudfpoax] dir1...dirN file1...fileN dir
+
+	Options	:
+	 -r recursive, copy all subdirectories as well.
+	 -u update, if newer version exists on dest, don't copy
+	 -f freshen, if file doesn't exist on dest or newer, don't copy
+	 -q suppresses 'not newer' and 'not there' messages in -u and -f
+	 -d don't set destination file date to that of source.
+	 -p don't set destination protection bits to those of source.
+	 -m erases the original. does not work with -r
+	 -o overwrites write/delete-protected, reads read-protected
+	 -a don't clear archive bit
+	 -x alternative output format, shows full path of files being copied
+
+	Example	: copy -r df0: df1:
+
+	Copy files or directories. When copying directories, the -r option
+	must be specified to copy subdirectories as well.  Otherwise, only
+	top level files in the source directory are copied.
+
+	All files will be displayed as they are copied and directory's
+	displayed as they are created. This output can be suppressed by
+	redirecting to nil: eg. copy -r >nil: df0: df1:
+
+	Copy will abort after current file on Control-C.
+
+	Copy by default sets the date of the destination file to that of
+	the source file. To overide this feature use the -d switch.
+
+	Similarly, it sets protection bits (flags) to those of source and
+	any file comment will be copied. To avoid this use -p. The archive
+	bit is always cleared by default (use option -a to leave it
+	untouched).
+
+	Another useful option is the -u (update) mode where copy will not
+	copy any files which exists already in the destination directory
+	if the destination file is newer or equal to the source file.
+	This is useful when developing code say in ram: eg. 'copy *.c ram:'
+	when done you can copy -u ram: df1: and only those modules you have
+	modified will be copied back.
+
+	Copy command will now create the destination directory if it does
+	not exist when specified as 'copy [-r] dir dir'. If you specify
+	copy file file file dir, then 'dir' must already exist.
+
+    CP (or COPY)
+
+	Equivalent to COPY.
+
+    DATE
+
+	Usage	: date [-bsr] [new date and/or time]
+	Example	: date Wednesday  # this refers to NEXT wed, of course
+
+	Options	:
+	  -b print date/time from the battery clock, if existent
+	  -s stores the current time internally
+	  -r shows time relative to last stored in secs and hundredths
+
+	Used to read or set system date and/or time. All standard options
+	may be used (yesterday, tomorrow, monday, etc.).
+	Leading zero's are not necessary.
+	Without parameters shows Dddddd DD-MMM-YY HH:MM:SS.
+
+    DEC
+
+	Usage	: dec varname [value]
+	Example	: dec abc
+
+	Decrement the numerical equivalent of the variable with specified
+	value (default: 1) and place the ASCII-string result back into
+	that variable.
+
+    DELETE (or RM)
+
+	Usage	: delete [-fpqrv] file file file...
+	Example	: delete foo.txt test.c
+
+	Remove (delete) the specified files.  Remove always returns
+	errorcode 0.  You can remove empty directories.
+
+	Options	:
+	 -r recursively remove non-empty directories.
+	 -p (or f); remove delete-protected files.
+	 -v toggle verbose output.  Useful if 'delete' is aliased.
+	 -q (quit), delete aborts if the file to be removed didn't exist
+	     or couldn't be deleted. This does _not_ affect non-matching
+	     wildcards.
+
+	If you specify any wildcard deletes the files will be listed as
+	they are deleted. This can be suppressed by redirecting to nil:
+
+    DIR (or LS)
+
+	Usage	: dir [-abcdfhiklnoqstuv] [-z [lformat]] [path path ... ]
+	Example	: dir -ts downloads:
+		  dir -lz "%7s %-.16n %m" *.c
+	Options	:
+	 -d list directories only
+	 -f list files only
+	 -h list only files which not start with a dot, end with '.info' or
+	    have the h-flag set. Adds an 'i' bit to the flags which tells
+	    if an according .info file exists.
+	 -s short multi(4) column display.
+	 -c don't change colors for directories
+	 -q quiet display. does not show length in blocks
+	 -o display file nOtes
+	 -n display names only
+	 -p display full path names and suppress directory titles
+	 -a shows the age of all files in the format  days hours:minutes
+	 -i identifies every file, shows the type instead of the date.
+	    See chapter XIV CLASSES
+	 -v (viewdir) recursively sums up lengths of the files in a dir
+	 -l sorts the files by their length, longest first.
+	 -t sorts the files by their date and time, most recent first.
+	 -k sorts the files by their class (klass)
+	 -b sorts the files backwards.
+	 -g prints directories at the beGinning
+	 -e prints directories at the End
+	 -u must be given exactly two directories. Shows files only in
+	    the first directory, files in both and files in the second.
+	 -z custom format
+	    (must be followed by an argument which holds the format string)
+
+	Displays a directory of specified files. Default output shows
+	date, protection, block size, byte size and total space used.
+	Protections flags include new 1.2/1.3 flags (see under protect),
+	plus a 'c' flag which indicates that this file has a comment.
+	Files are alphabetically sorted, without case sensitivity, and
+	directories are in red pen (unless you use -c). Dir takes in
+	account the width of your window.
+
+	To recursively show the contents of a directory and all its
+	sub-directories use the special wildcard pattern ".../*", see
+	section "WILDCARDS" (man wildcards).
+
+	The lformat string (option -z) is used to create your own directory
+	format. Instead of the "-z lformat" command line argument you can
+	set the variable "_dirformat" (which holds "lformat", but you must
+	set option -z anyhow).
+	Your custom format may contain the following codes:
+	 %a age               %l LF if comment      %t time
+	 %b size in blocks    %m multi column       %u size in K
+	 %c flag c (comment)  %n name               %v dir size in eng.
+	 %d date              %o filenote (comment) %w dir size in K
+	 %e flag i (.info)    %p name w/ path       %x translated date
+	 %f flags "hsparwed"  %q name w/ slash      %+ flag i as '+' or ' '
+	 %i flag d (dIr)      %r size in eng.
+	 %k class             %s size
+
+	 %I link information (S: softlink, H: hardlink, P: pipe, -: else)
+	 %L name of original file if link (empty otherwise)
+	 %N name + original name (of link)
+	 %F protection bits (flags "rwed") for group/other
+	 %U user-id
+	 %G group-id
+
+	Between the '%' and the identifying letter, there may be an optional
+	field width. If the number is preceded by a '-', the field contents
+	will be left adjusted. If by a dot, the contents will be cut down
+	to match the field width if they are longer.
+	If the format string contains a %m, cshell will try to print more
+	than one entry on one line. The column width is the field width of
+	the %m entry. If omitted, it's assumed to be the one of the first
+	file. If a file is longer, it will use two columns.
+
+	If you prefer the old output-style of this command (5.19 and before)
+	add the following line to your .cshrc file:
+	 set _dirformat "   %-24n %c%f %7s %4b %d %t"
+
+	FYI: Due to layout reasons and various bugs in the locale files, the
+	translated date string is shortened to a maximum of 9 characters.
+	This also affects some weekday names (eg, german "Donnerstag").
+	"Thank" Commodore for these never fixed bugs which have been reported
+	repeatedly. (Commodore's command "list" - in opposite - doesn't cut
+	strings but messes up layout; so, please don't mail me that "list"
+	would work fine - it does not)
+
+    DISKCHANGE
+
+	Usage	: diskchange drive...drive
+
+	Like AmigaDOS diskchange.  Multiple drive names are allowed.
+
+    ECHO
+
+	Usage	: echo [-en] string
+	Example	: echo hi there
+	Results	: hi there
+
+	Options	:
+	 -n don't append newline.
+	 -e echo to stderr.
+
+	Echo the given string.
+
+    ELSE
+
+	Usage	: else ; command
+	Usage	: if -f foo.c ; else ; echo "Not there" ; endif
+
+	Else clause, must follow an IF statement.
+
+    ENDIF
+
+	Usage	: endif
+
+	The end of an if statement.
+
+	Note: if you return from a script file with unterminated IF's
+	and the last IF was false, prompt will be changed to an
+	underscore ('_') and no commands will be executed until
+	'endif' is typed.
+
+    ERROR
+
+	Usage	: error n
+
+	Generates return code n.
+
+    EXEC
+
+	Usage	: exec [-i] command [args]
+	Example	: set cmdline "dir ram:"
+		  exec $cmdline		# would not work without exec
+
+	Options	:
+	 -i  return code 0.
+
+	Execute the command specified; exec command is equivalent to
+	command, only you can use variables to specify command name.
+	Note that the command line is parsed TWICE! Examples:
+	 set a dir ram:; exec $a              # right
+	 set a mkdir; exec $a "My directory"  # wrong! creates 2 directories
+
+	Exec returns the return code of the command executed unless
+	option -i (ignore) is set, in which case always 0 is returned.
+
+    FAULT
+
+	Usage	: fault error1 .. errorN
+	Example	: fault 205 212
+
+	Like AmigaDOS fault, prints specified error messages.
+
+    FILENOTE
+
+	Usage	: filenote file1 .. fileN  note
+		  filenote -s file1...fileN
+
+	Options	:
+	 -s (second form) ; displays the file notes of the given files.
+
+	The first form sets AmigaDOS comment of the specified file.
+
+    FLIST
+
+	Usage	: flist
+
+	Lists the filenumbers of files opened by open.
+	See open and close for more info.
+
+    FLTLOWER
+
+	Usage	: fltlower
+	Example	: dir | fltlower
+	Or	: fltlower <readme
+
+	This is a filter command, i.e. it reads from stdin and writes to
+	stdout. The more natural way to use it is a pipe, or it can be
+	redirected.
+	Its purpose is to convert all alphabetic to lower case.
+
+    FLTUPPER
+
+	The same of fltlower, only this converts to upper case.
+
+    FOREACH
+
+	Usage	: foreach [-v] varname ( strings ) command
+	Example	: foreach i ( a b c d ) "echo -n $i;echo \" ha\""
+	Result	: a ha
+		  b ha
+		  c ha
+		  d ha
+
+	Options	:
+	 -v display arguments every time command is executed.
+
+	'strings' is broken up into arguments.  Each argument is placed in
+	the local variable 'varname' in turn and 'command' executed. Put
+	the command(s) in quotes.
+
+	Foreach is especially useful when interpreting passed arguments in
+	an alias.
+
+	eg.
+		foreach i ( *.pic ) viewilbm $i
+	assuming a.pic and b.pic in current directory the following commands
+	will occur:
+		viewilbm a.pic
+		viewilbm b.pic
+
+	All 'for...' commands can be interrupted using CTRL-D or CTRL-E.
+
+    FOREVER
+
+	Usage	: forever command
+	or	: forever "command;command;command..."
+
+	The specified commands are executed over and over again forever.
+
+	Execution stops if you hit ^C or ^D, or if the commands return with
+	an error code.
+
+    FORLINE
+
+	Usage	: forline var filename command
+	or	: forline var filename "command;command..."
+	Example	: forline i RAM:temp "echo line $_linenum=$i"
+
+	For each ASCII line of file specified commands are executed and
+	var points to line content. You can check system variable _linenum
+	to find the number of the line currently read.
+	If STDIN (case sensitive) is specified as input file, the lines are
+	read from standard input.
+
+    FORNUM
+
+	Usage	: fornum [-v] var n1 n2 command
+	or	: fornum [-v] -s var n1 n2 step command
+
+	Example	: fornum -v x 1 10 echo $x
+	or	: fornum -s x 10 1 -1 echo $x # counts backwards
+
+	Executes  command(s)  for  all numerical values of x between n1 and
+	n2.   If  more  than  one  command  is  specified,  or  command  is
+	redirected, include command(s) in quotes.
+
+
+	Options	:
+	 -v (verbose) causes printing of progressive numbers.
+	 -s specify a step; if negative, the count will be backwards.
+
+    GETENV
+
+	Usage	: getenv [shellvar] envvar
+
+	Gets the value of an ENV: variable and stores it in the shell
+	variable 'shellvar'. If shellvar is omitted, the value of the
+	ENV: variable is printed to stdout.
+	This command is obsolete since ENV: variables can be retrieved
+	by writing $envvar anywhere on the command line.
+
+    GOTO
+
+	Usage	: goto label
+	Example	:
+		  label start
+			echo "At start"
+			dir ram:
+			goto start
+
+	Goto  the specified label name.  You can only use this command from
+	a  source  file.   Labels  may  be  forward or reverse from current
+	position. It is legal to jump out of if's.
+
+    HEAD
+
+	Usage	: head [filename] [num]
+	Example	: head readme 20
+
+	Display first "num" lines of "filename".   If num is not specified,
+	10 is assumed. If filename is not specified, standard input (stdin)
+	is taken instead.
+
+    HELP
+
+	Usage	: help [-f]
+	Example	: help
+	Options	:
+	 -f list functions also
+
+	Simply  displays  all  the  available  commands.   The commands are
+	displayed in search-order.  That is, if you give a partial name the
+	first  command  that  matches  that  name  in  this list is the one
+	executed.   Generally,  you  should  specify enough of a command so
+	that it is completely unique.
+
+    HISTORY
+
+	Usage	: history [-nr] [partial_string]
+	Example	: history
+
+	Options	:
+	 -n omits line numbering
+	 -r reads history from stdin
+
+	Displays  the  enumerated  history  list.   The size of the list is
+	controlled  by  the  _history  variable.   If you specify a partial
+	string, only those entries matching that string are displayed.
+
+    HOWMANY
+
+	Usage	: howmany
+
+	This  command  tells you how many instances of Shell are running in
+	your system.
+
+    HTYPE
+
+	Usage	: htype [-r] [file1..fileN]
+
+	Options	:
+	 -r display all files in a directory.
+
+	Displays the specified files in hex and ASCII, just like the system
+	command 'Type file opt h'.  Especially suitable for binary files.
+
+	If there are no filenames specified, standard input is used,
+	so you can use htype as the destination for a pipe.
+
+    IF
+
+	Usage	: if [-n] argument conditional argument [then]
+	or	: if [-n] argument
+	or	: if [-n] -f file    or   -e file
+	or	: if [-n] -d file/dir
+	or	: if [-n] -m
+	or	: if [-n] -t file file1 .. fileN
+	or	: if [-n] -r rpnexpression
+	or	: if [-n] -v varname
+	or	: if [-n] -o char arg ... arg
+
+	Options	:
+	 -n (NOT) reverses the result.
+	 -d tests the type of the object specified: if it is a
+	    directory, then TRUE; if it is a file (or it doesn't exist)
+	    then FALSE.
+	 -f (or -e) checks for existance of the specified file.
+	 -m test if FAST memory is present.
+	 -o tests for option 'char' in the rest of the arguments.
+	 -r evaluates a given RPN expression (see under RPN for more info).
+	    If value on top of stack is 0, then FALSE, else TRUE.
+	 -t compare the date and time of the first file with all the others;
+	    if the first is younger than ALL the others, then FALSE,
+	    else TRUE. If a file doesn't exists, it is considered as
+	    being older.
+	 -v test if a given variable is defined.
+
+
+	Makes the following instructions up to the next endif conditinal.
+	The 'then' is optional. The if clause must be followed by a semi-
+	colon if instructions follow on the same line.
+
+	If a single argument is something to another argument.  Conditional
+	clauses allowed:
+
+	<, >, =, ! and combinations.  Thus != is not-equal, >= larger or
+	equal, etc...
+
+	If arguments are not numeric, they are compared as strings.
+
+	Usually the argument is either a constant or a variable ($varname).
+
+	The second form of IF is conditional on the existence of the
+	argument.  If the argument is a "" string, then FALSE, else TRUE.
+
+	The third form of IF used by -f switch checks for existance of
+	the specified file. -e is the same as -f
+
+	Option -m is used to test if FAST memory is present.
+	Example (to be included in a login.sh file):
+	if -m; resident -d lc1 lc2 blink; endif
+
+	Using -t form compares the date and time of the first file with
+	all the others; if the first is younger than ALL the others, then
+	FALSE, else TRUE. If a file doesn't exists, it is considered as
+	being older.
+	This feature is especially useful for building makefiles without
+	using any MAKE utility.
+
+	Example:
+	if -t test.o test.asm test.i ; asm -o test.o test.asm ; endif
+
+
+	Option -o tests for option 'char' in the rest of the arguments.
+
+	Example: if -o r -rp ram:comm1.c     will yield TRUE.
+
+	When using 'IF' command interactively if you are entering commands
+	following an 'IF' that was false, the prompt will be set to a
+	underscore '_ ' to indicate all commands will be ignored until
+	an 'ELSE' or 'ENDIF' command is seen.
+
+    INC
+
+	Usage	: inc varname [value]
+	Example	: inc abc 5
+
+	Increment the numerical equivalent of the variable with specified
+	value (default: 1) and place the ASCII-string result back into
+	that variable.
+
+    INFO
+
+	Usage	: info [-pt] [path1 path2 ... pathN]
+
+	Options	:
+	 -p  only display drives with readable (present) disks
+	 -t  print disk/fs type and bytes used instead of block sizes
+
+	If called without arguments, info gives you the drive information
+	on all devices. If one or more paths are specified, only infor-
+	mation on those drives will be displayed.
+
+	Note: Cshell does (correct) rounding for all displayed values,
+	      Commodore's Info command does not. So values may slightly
+	      change.
+
+    INPUT
+
+	Usage	: input [-sr] var var ... var
+	Example	: input abc
+
+	Options	:
+	 -s the whole line is read in as one word, including spaces.
+	 -r puts the console to single character mode before reading,
+	    ie. does not wait for RETURN to be pressed). Use with care.
+
+	Input from STDIN (or a redirection, or a pipe) to a variable.  The
+	next input line is broken up in words (unless quoted) and placed in
+	the variable.
+
+    JOIN
+
+	Usage	: join [-r] file1..fileN destfile
+	Example	: join part1 part2 part3 total
+
+
+	Options	:
+	 -r overwrite any existent destfile.
+
+	Joins (concatenates) the specified files to get destfile. Join
+	will refuse to overwrite an existing destfile, unless the 'r'
+	option is used.
+
+    KEYMAP
+
+	Usage	: keymap [number {key=function}]
+	Example	: keymap 0 1030=4 1032=12
+
+	Defines one keymap for the csh command line editing. See chapter XV.
+
+    LABEL
+
+	Usage	: label name
+
+	Create a program label right here. Used in source files, you can
+	then GOTO a label.
+
+    LINECNT
+
+	Another filter. Counts the number of lines of its stdin and writes
+	it to stdout.
+
+    LN (or MAKELINK)
+
+	Usage	: ln [-s] filename [linkname]
+	Example	: ln stuff/data newname
+
+	Options	:
+	 -s make soft link (default is hard link)
+
+	ln creates an additional directory entry, called a link,  to
+	a file or directory.  Any number of links can be assigned to
+	a file.
+
+	filename is the name of  the  original  file  or  directory.
+	linkname  is  the  new  name  to  associate with the file or
+	filename.  If linkname is omitted,  the  last  component  of
+	filename is used as the name of the link.
+
+	A hard link (the default) is a standard directory entry just
+	like the one made when the file was created.  Hard links can
+	only be made to existing files.  Hard links cannot  be  made
+	across file systems (disk partitions, mounted file systems).
+	To remove a file, all hard links  to  it  must  be  removed,
+	including  the  name by which it was first created; removing
+	the last hard link releases the inode  associated  with  the
+	file.
+
+	A symbolic link, made with  the  -s  option,  is  a  special
+	directory entry that points to another named file.  Symbolic
+	links can span file systems and point  to  directories.   In
+	fact,  you  can create a symbolic link that points to a file
+	that is currently absent from the file system; removing  the
+	file that it points to does not affect or alter the symbolic
+	link itself.
+
+	NOTE: Symbolic links (also known as "soft links") are
+	      currently NOT SUPPORTED by AmigaOS.  DO NOT USE!
+
+    LOCAL
+
+	Usage: local [var...var]
+
+	Creates one or more local variables. Those variables disappear
+	at the end of their alias or source file, and cannot be accessed
+	from inside other aliases or source files.
+	With no arguments, shows all top level variables and their values.
+
+    LS (or DIR)
+
+	Equivalent to DIR.
+
+    MAKELINK (or LN)
+
+	Equivalent to LN.
+
+    MAN
+
+	Usage	: man command(s)
+	Example	: man mkdir
+
+	Get  info about a Shell command, or others keywords.  These include
+	all  special  _variables, plus various keywords:  WILDCARDS, PIPES,
+	EDITING, STARTUP and more.
+	See special alias manlist to get a list of ALL keywords supported
+	by man.
+	You  must set _man to the paths of your .doc files:
+	   set _man dh1:docs/aliases.doc dh1:docs/csh.doc
+
+	To create your own .doc files, precede all your keywords by four
+	blanks. 'man' will then display lines until the first character
+	of a line is alphanumeric or has four leading blanks.
+
+    MD (or MKDIR)
+
+	Equivalent to MKDIR.
+
+    MEM
+
+	Usage	: mem [-cfqsl]
+
+	Options	:
+	  -c shows the free chip mem only
+	  -f shows the free fast mem only
+	  -q outputs just a number without titles
+	  -s stores current free memory
+	  -r shows memory used relative to last stored
+	  -l flushes all unneeded memory
+
+    MENU
+
+	Usage	: menu [-mn] [ title item...item ]
+	Example	: menu Shell   JrComm,,j   Rename,"rename ",r  quit
+
+	Options	:
+	 -n clear all existing menus.
+	 -m use monospaced font.
+
+	Appends one pull down in the current console window. Up to 31
+	menus with 63 items each (including title) can be installed.
+
+	If the item is just a string, that string will be in the menu item.
+	When you select it, it will be put into the prompt and executed.
+
+	If there is a comma and after that comma a second string, this
+	will be the command will be inserted at the prompt. This time you
+	have to add the ^M yourself if you want the command to be executed.
+
+	If there is a second comma, the letter after that comma will be
+	the keyboard shortcut for that menu item. (This will be case
+	sensitive some day, use lowercase).
+
+	If for any reason your current menu is corrupt, just enter an
+	empty 'menu' command.
+
+	When the first menu is installed you can use option -m to choose
+	a monospaced font (System Default Font) instead of the default
+	Intuition Font (which may be a proportional font). This is useful
+	for user-formatted menus (like in the example script "menu.sh").
+
+    MKDIR (or MD)
+
+	Usage	: mkdir [-p] name name name...
+	Example	: mkdir df0:stuff
+
+	Options	:
+	 -p create all dirs in path if necessary.
+
+	Create the specified directories.
+	If "name" ends with trailing slash it will be stripped off.
+
+	mkdir now supports the -p option.  mkdir -p followed by a full path
+	name will create all directories necessary to make the path.  For
+	example, suppose that the directory ram:foo exists and is empty.
+	"mkdir -p ram:foo/bar/tst/a" would create ram:foo/bar,
+	ram:foo/bar/tst, and ram:foo/bar/tst/a all in one step.
+	In addition, it will issue no error codes for directories it cannot
+	make.
+
+    MV (or RENAME)
+
+	Equivalent to RENAME.
+
+    OPEN
+
+	Usage	: open filename filemode filenumber
+	Example	: open RAM:data w 1
+
+	This  allows you to open a file, redirect to it as many commands as
+	you like, then close it.
+	Filename is any valid AmigaDOS filename, filemode is either "r" for
+	read or "w" for write, filenumber is a number between 1 and 10.
+	To  redirect  a  program to or from an open file, use as your redir
+	filename a dot followed by the filenumber.
+	Here is a complete example:
+
+		open RAM:data w 1
+		echo -n 2+2= >.1
+		rpn 2 2 + . CR >.1
+		close 1
+		type RAM:data	# will display 2+2=4
+
+	See also close, flist.
+
+    PATH
+
+	Usage	: path [-gr] [dir...dir]
+
+	Without arguments, lists AmigaDOS path. Otherwise adds given
+	directories to the path, preventing duplicate entries.
+
+	Options	:
+	 -r Resets the path
+	 -g Global path modifications; operations (add, reset) apply to all
+	     CLI processes instead of only the current one
+
+	Note:
+	It's not perfectly "legal" to modify the path-list of other
+	processes. Adding entries (option -g) works fine in most cases.
+	But the removal of entries (options -gr together) may crash the
+	system, because CSH doesn't know about the memory handling of
+	other processes (it doesn't know how they allocated the memory
+	for the path-list entries).
+
+	So use option -g always with care (at least together with -r).
+	If it works, it's okay. If not, you lose ;-)  There's no 100%
+	reliable way for global path modifications.
+
+    PRI
+
+	Usage	: pri clinumber pri
+	Example	: pri 3 5	# set priority of cli #3 to 5
+
+	Change the priority of the specified task (use PS command to
+	determine clinumber). If you specify 0 as clinumber you can
+	change priority of "this" task (the one executing shell).
+
+    PROTECT
+
+	Usage	: protect file1 ... filen [u|g|o|a][+|-|=][flags]
+	Example	: protect myfile u+rwe
+
+	Set AmigaDOS file protection flags for the file specified.
+	Valid flags are h, s, p, a, r, w, e, d.  (x is the same as e)
+
+	Ownership:
+	  u  Set specified bits for User
+	  g  Set specified bits for Group
+	  o  Set specified bits for Other (not User, not Group)
+	  a  all, alias for "ugo" (User/Group/Other)
+	Specifying no ownership is equal to 'u'.
+
+	Modes:
+	  +  Set specified bits, leave all others
+	  -  Clear specified bits, leave all others
+	  =  Set specified bits, clear all others
+	Specifying no mode is equal to '='.
+
+	Archive bit cleared by default!
+
+	Note: This command is equivalent to "chmod" except that the
+	      arguments for filename(s) and flag(s) are reversed.
+
+    PS
+
+	Usage	: ps [-les] [commandname...commandname]
+
+	Options	:
+	 -l shows full pathnames of commands
+	 -e excludes the given command names from the list
+	 -s don't show stacksize and type, use old output-format instead
+
+	Gives status of CLI processes.  eg:
+
+	Proc Command Name         Typ  Stack  Pri.  Address  Directory
+	* 1  csh                  fr   10000    0      97b0  Stuff:shell
+	  2  clock                bw    4096  -10    2101a8  Workdisk:
+	  3  emacs                bw   30000    0    212f58  Stuff:shell
+	  4  VT100                bw    4000    0    227328  Workdisk:
+
+	Address is the address of the task, directory is the process
+	currently CD'd directory. My default, only the BaseNames of
+	the commands are shown. Your own CLI will be marked by an
+	asterisk in the first column.
+
+	Stack size is the _real_ size of a command's stack. It's _not_
+	the size a program gets if it's launched by this command.  Use
+	"Status" instead if you need the size of the Default Stack.
+	(be aware: "Status" does _not_ show the stack size used by a prog!)
+
+	Typ are two letters.  The first is either "f" (foreground) or
+	"b" (background).  The second is one of:
+		i: invalid
+		a: added
+		r: running / ready to run
+		w: waiting
+		e: except
+		d: removed
+
+    PWD
+
+	Usage	: pwd
+
+	Rebuild _cwd by backtracing from your current directory.
+
+    QSORT
+
+	Usage	: qsort [-cr] <in >out
+
+	Options	:
+	 -c case-sensitive
+	 -r reverse sort
+
+	Quick sorts from stdin to stdout (case-insensitive).
+
+    QUIT
+
+	Usage	: quit
+
+	Quit out of Shell back to CLI.
+
+    RBACK
+
+	Usage	: rback command
+
+	Start a new process executing the specified command, but can't do
+	input/output. Equivalent to 'run command >NIL: <NIL:'. Instead of
+	using rback, you can add a '&' at the end of the command line.
+
+	Note: rback cannot start builtin commands. You have to start a
+	      subshell: rback csh -c "copy ram:temp prt:;rm ram:temp
+
+    READFILE
+
+	Usage	: readfile varname [filename]
+
+	Completely reads an ASCII file and assigns it to a variable. Each
+	line becomes one word in the resulting string. Embedded blanks
+	are no problem. If file name is omitted, stdin is used. See also
+	'writefile', @subfile and @flines
+
+    REHASH
+
+	Usage	: rehash [-cglos]
+
+	Options	:
+	 -c clear local program hash list
+	 -g clear global program hash list
+	 -l load global program hash list into local buffer
+	 -o output local program hash list
+	 -s save local program hash list to disk
+
+	Scans the complete DOS search path (see also 'path') and builds a
+	program hash list. This can be used for program name completion from
+	command line (default: ESC-p, ESC-P). And when running commands
+	CShell does not scan DOS search path any more for every command but
+	instead scans the program hash list in memory (minimizes disk access
+	and speeds up running commands significantly).
+
+	Of course, when you add a directory to your path, when you add
+	programs to the existing path or when you remove directories/programs
+	then you have to rebuild the program hash list.
+
+	Each invocation of CShell has its own local buffer to hold that
+	program hash list.  Use option -s to save the local list to disk
+	(csh:csh-prgs).  With option -l the list is loaded into memory.
+	The first CShell loading the list puts a copy of it into a global
+	buffer so that next time a CShell wants to load it the global buffer
+	is used and not the disk file.
+
+	The global list stays in memory -- even if you quit all CShells.
+	Use option -g to free that global list (if you are low on memory),
+	but this does not affect local lists of any currently running CShell.
+	Option -c clears the local list.
+
+	If you run this command without options the scanned list is not only
+	put into local buffer but also in global buffer.
+
+	There's no need to clear the local/global list before
+	loading/building a new one. This is done automatically.
+
+	The variable $_prghash (default: 'csh:csh-prgs') holds the filename
+	where the program hash list is loaded from and saved to.
+
+	Programs from the hash list are case in-sensitive and may be
+	abbreviated. This can be toggled with the variable "_abbrev".
+
+	Recommended usage:
+	First run "rehash" from your shell to build the program hash list.
+	Save this list to disk with "rehash -s".  Now include "rehash -l"
+	in "s:.cshrc" to load this list on every invocation of CShell.
+
+    RELABEL
+
+	Usage	: relabel drive name
+	Example	: relabel DH0: Picard
+
+	Change the volume name of the disk in the given drive to the name
+	specified. Volume names are set initially when you format a disk.
+
+	If you have a floppy disk system with only one disk drive, be sure
+	to specify the disks by volume name, instead of drive name.
+
+    RENAME (or MV)
+
+	Usage	: rename [-fv] from to
+	or	: rename [-fv] from from from ... from todir
+
+	Options	:
+	 -f don't abort on errors
+	 -v verbose mode (print renamed filenames)
+
+	Allows you to rename a file or move it around within a disk.
+	Allows you to move 1 or more files into a single directory.
+	The archive bit of the file(s) will be cleared.
+
+
+    RESIDENT
+
+	Usage	: resident [-dr] [files]
+	Example	: resident lc1 lc2 blink	# load these as resident
+		  resident -d lc1 lc2 blink	# defer load when needed
+		  resident -r lc1 lc2 blink	# remove these
+		  resident			# list resident programs
+
+
+	Options	:
+	 -d deferred load;
+	 -r remove files from resident list
+
+	This is DOS resident. Commands are searched by Shell in resident
+	list BEFORE of searching on any external device.
+	Only PURE programs can run as resident, see DOS docs for more info.
+	Option -d is very useful: you can say, in your startup file,
+	resident -d file...file; programs will not be loaded immediately,
+	but only when you will try to load them. This way, you will not
+	waste memory and startup time if you don't use the programs.
+	Old option -a has no more effect.
+
+    RETURN
+
+	Usage	: return [n]
+	Example	: return 10
+
+	Exit from a script file, or quit from shell with optional
+	exit code.
+
+    RM (or DELETE)
+
+	Equivalent to DELETE.
+
+    RPN
+
+	Usage	: rpn expression
+	Example	: rpn 3 7 *	# Prints the value 21
+
+	Evaluate an RPN expression, using 32-bit values. In older versions
+	of Shell RPN contained string functions too, but now that strings
+	are handled by specifical commands, these are no more needed.
+	At end of evaluation, RPN prints values on stack, so you can
+	say for instance "rpn $x 2 * | input x" to double the value of
+	variable x.
+	Functions implemented are:
+
+	    + - * /	Obvious meaning; / means integer division, of course
+	    %		Module operator e.g. "rpn 7 3 %" answers 1
+	    & | ~	Bitwise and, or, not operators
+	    > < ==	Tests for greater-than, lower-than, equal. To get
+			a test for >= (or <=), you can use < ! (or > !)
+	    !		Logical not operator
+	    DUP		Duplicate value on top of stack
+	    DROP	Drop value on top of stack
+	    SWAP	Swap two values on top of stack
+
+	To avoid confusion with redirections, > and < operators must be
+	enclosed in quotes e.g.
+
+		3 2 ">"		# Prints 1
+
+    RUN
+
+	Usage	: run prgm args
+	Example	: run emacs test.c
+
+	Start a new process executing the specified command. This command is
+	not fully reliable: use at your own risk.  See also rback.
+
+    RXREC
+
+	Usage	: rxrec [portname]
+
+	Create an AREXX-compatible port of the specified name (defaults to
+	"rexx_csh"), then puts Shell to sleep waiting for messages on it.
+
+	CAUTION: the only way to exit from this status is to send to the
+	port the message "bye".
+
+	Example:
+	Open two Shell's in two separate CLI's. From the first, type:
+
+		rxrec
+
+	Now first Shell doesn't respond to keyboard input; instead, it waits
+	for messages on a port called "rexx_csh". Now, from the other, type:
+
+		rxsend rexx_csh "dir df0:"
+
+	You will see the listing of df0: in the first Shell.  Experiment as
+	you like, then:
+
+		rxsend rexx_csh bye
+
+	And all will return to normal.
+
+    RXSEND
+
+	Usage	: rxsend [-lr] portname command...command
+
+	Options	:
+	 -r set the variable _result to the result string of the
+	    AREXX command.
+	 -l send the whole line as *one* command.
+
+	Send commands to any program with an AREXX-compatible port. Be aware
+	that every word is sent as a single command!
+
+	You don't have to load anything to use these command (or rxrec):
+	all you need is a program with the right port.
+
+	An example is CygnusEdProfessional: here is, for instance, a command
+	to wake it up, load the file test.c and jump to line 20:
+
+		rxsend rexx_ced cedtofront "open test.c" "jmp to line 20"
+		# rexx_ced is the name of AREXX port for CygnusEd
+
+
+	Refer to your application manual for details and for the names
+	of the commands and the port.
+
+    SEARCH
+
+	Usage	: search [-abceflnoqrvw] file...file string
+
+	Search specified files for a string. Only lines containing the
+	specified strings are displayed.
+
+	If the filename is STDIN (in uppercase), the standard input is
+	used, so you can use search as the destination for a pipe.
+	Example:
+		strings myprog * | search STDIN .library
+	Lists all libraries used in "myprog".
+
+	Search is very fast if none of the options -w, -e and STDIN was
+	specified and the file fits into memory.
+
+	Options	:
+	  -a (abort)   stops search as soon as the pattern was found once
+	  -b (binary)  shows only byte offsets instead of lines. If combined
+	               with -n, shows naked numbers.
+	  -c (case)    turns ON case sensitivity
+	  -e (exclude) lists lines NOT containing the pattern
+	  -f (files)   causes only the names of the files in which the pat-
+	               tern was found to be displayed.
+	  -l (left)    pattern must be at beginning of line (this is faster
+	               than using a wild card)
+	  -n (number)  turns off line numbering
+	  -o (only)    finds only whole words
+	  -q (quiet)   suppresses printing of file names.
+	  -r (recurse) if you specify any directory, all files in that di-
+	               rectory are recursively searched.
+	  -v (verbose) shows each file name on a single line. this is auto-
+	               matically turned on if search is redirected
+	  -w (wild)    wild card matching. see notes below
+
+	Notes to wild card matching;
+	- Uses Shell standard matching.
+	- All standard DOS wildcards are allowed * ? [] () | ~ ' #
+	- The WHOLE line must match the string, not only a substring.
+	- String MUST be enclosed in quotes to avoid wildcard expansion
+
+	Examples:
+		search -cr df0:include ACCESS
+	Find all occurrences of ACCESS (in uppercase) in all files
+	contained in include directory.
+		search -w shell.h "'#define*"
+	Lists only lines of file beginning with (not simply containing)
+	#define. Note the use of ' to escape the special symbol #.
+
+    SET
+
+	Usage	: set [name] [=] [string]
+	Example	: set abc hello
+
+	Set with no args lists all current variable settings.
+	Set with one arg lists the setting for that particular variable.
+	Specifying name and string, stores the string into variable name.
+
+	Also see the section on special _variables.
+
+    SETENV
+
+	Usage	: setenv envvar value
+
+	Sets an ENV: variable to the given value. The value must be
+	enclosed in quotes if it contains spaces. To retrieve an ENV:
+	variable, just use $envvar anywhere on a command line.
+
+    SLEEP
+
+	Usage	: sleep [-t] timeout
+	Example	: sleep 10
+
+	Options	:
+	 -t Specify timeout in ticks (50 per second) instead of seconds
+
+	Sleep for 'timeout' seconds, or until ^C typed.
+
+    SOURCE
+
+	Usage	: source file [arguments]
+	Example	: source mymake.sh all
+	Result	: batch file 'mymake.sh' called with var _passed = 'all'
+
+	Execute commands from a file.  You can create SHELL programs in
+	a file and then execute them with this command.  Source'd files
+	have the added advantage that you can have loops in your command
+	files (see GOTO and LABEL).  You can pass SOURCE files arguments
+	by specifying arguments after the file name.  Arguments are passed
+	via the _passed variable (as a single string, a set of words).
+	See _failat variable for script aborting.
+
+	Long lines may be split by appending a backslash (\) at end of
+	first part. One single line must be shorter than 512 bytes, but
+	the concatenated line can be as long as you want. There is no
+	limit on the length of the concatenated line.
+
+	Automatic 'sourcing' is accomplished by appending a .sh suffix to
+	the file (no need to set the s-bit) and executing it as you would
+	a C program:
+
+	--------- file hello.sh ---------
+	foreach i ( $_passed ) "echo yo $i"
+	---------------------------------
+
+	$ hello a b c
+	yo a
+	yo b
+	yo c
+
+	If the last character of a line in a source file is '{', all
+	following lines will appended to the current one and separated
+	by semicolons until the last character of a line is '}'. Those
+	blocks may be nested. You may use comments and unterminated
+	strings within.
+
+	--------- file login.sh ---------
+	alias complex {
+	  echo -n "this alias
+	  echo " works!"
+	}
+	---------------------------------
+
+	$ login
+	$ complex
+	this   alias   works!
+
+    SPLIT
+
+	Usage	: split srcvar dstvar...dstvar
+
+	Assigns one word of srcvar to every dstvar, the rest of srcvar to
+	the last dstvar.
+	Note: You enter variable NAMES, not variables.
+
+    STACK
+
+	Usage	: stack [number]
+	Example	: stack [-s] 8000
+
+	Options	:
+	 -s prints size only (pure number, no text).
+
+	Changes the default stack for this CLI.
+	Without arguments, just prints it.
+
+    STRHEAD
+
+	Usage	: strhead varname breakchar string
+	Example	: strhead x "." foobar.bas	# Will set x to "foobar",
+	                                  	# . must be quoted!
+
+	Remove everything after and including the breakchar in 'string' and
+	place in variable 'varname'. See also command "STRTAIL".
+
+    STRINGS
+
+	Usage	: strings [-bnrv] [file1..fileN] [minlength]
+	Example	: strings [-bnrv] c:dir c:list shell 7
+
+	Options	:
+	 -r  if you specify any directory, all files in that directory
+	     are recursively searched for strings
+	 -n  print name of current file in front of each string
+	 -b  shows each string enclosed by  '|' characters, so as to expose
+	     leading and trailing spaces or tabs.
+	 -v  verbose output before each file (filename, minlength)
+
+	Prints strings contained in specified files (usually binary)
+	with length >= minlength.  Default is 4.
+
+	You cannot use a filename that represents a number as last
+	argument. If there are no filenames specified, standard input
+	is used, so you can use strings as the destination for a pipe.
+
+    STRLEFT
+
+	Usage	: strleft varname string n
+	Example	: strleft x LongString 5	# Will set x to "LongS"
+
+	Place leftmost n chars of string in variable varname.
+
+    STRLEN
+
+	Usage	: strlen varname string
+	Example	: strlen x Hello		# Will set x to "5"
+
+	Puts len of string in variable varname.
+
+    STRMID
+
+	Usage	: strmid varname string n1 [n2]
+	Example	: strmid x LongString 5 3	# Will set x to "Str"
+
+	Places n2 chars from string, starting at n1, in variable varname.
+	By omitting n2, you get all chars from n1 to end of string.
+
+    STRRIGHT
+
+	Usage	: strright varname string n
+	Example	: strright x LongString 5	# Will set x to "tring"
+
+	Place rightmost n chars of string in variable varname.
+
+    STRTAIL
+
+	Usage	: strtail varname breakchar string
+	Example	: strtail x "." foobar.bas	# Will set x to "bas",
+	                                  	# . must be quoted!
+
+	Remove everything before and including the breakchar in 'string' and
+	place in variable 'varname'. See also command "STRHEAD".
+
+    TACKON (or ADDPART)
+
+	Usage	: tackon var pathname filename
+	Example	: tackon x df0:c Dir	# sets x to "df0:c/Dir"
+	or	: tackon x df0: Preferences #sets x to "df0:Preferences"
+
+	Correctly  adds  a  filename  to a pathname, and puts the result in
+	variable specified.
+
+    TAIL
+
+	Usage	: tail [filename] [num]
+	Example	: tail readme 20
+
+	Display last "num" lines of "filename".    If num is not specified,
+	10 is assumed. If filename is not specified, standard input (stdin)
+	is taken instead.
+
+    TEE
+
+	Usage	: tee [file]
+	Example	: cc test.c | tee >error.list
+
+	Copies stdin to stdout and the given file.
+	If file is omitted, stderr is used.
+
+    TOUCH
+
+	Usage	: touch file1 .. fileN
+
+	Sets DateStamp of the specified files to the current date & resets
+	archive bit.
+
+	If a file doesn't exist, touch will create an empty one for you.
+
+    TRUNCATE
+
+	Usage	: truncate [n]
+	Example : alias | qsort | truncate
+
+	A filter that truncates the width of stdin to the specified number,
+	trying to account for tab's and escape sequences. If the number is
+	omitted, the current window width is used.
+
+    TYPE (or CAT)
+
+	Equivalent to CAT.
+
+    UNALIAS
+
+	Usage	: unalias name .. name
+	Example	: unalias vt
+
+	Delete aliases..
+
+    UNIQ
+
+	Usage	: uniq
+
+	This is a  filter that removes consecutive, duplicated lines in a
+	file.  It is most useful on a sorted file.
+
+    UNSET
+
+	Usage	: unset name .. name
+	Example	: unset abc
+
+	Unset one or more variables.  Deletes them entirely.
+
+    USAGE
+
+	Usage	: usage [command...command]
+
+	If called without arguments, usage gives you a short information
+	on the special characters used. Otherwise, usage shows you the
+	usage of the given commands. Calling a command with a '?' as
+	the only argument will show its usage, too.
+
+    VERSION
+
+	Usage	: version [-filr] [name]
+	Example	: version -fl libs:eazytools.library c:dir
+
+	Options	:
+	 -f don't look in memory, force load of FILE
+	 -i INTERNAL (?)
+	 -l show FULL version information
+	 -r RES (?)
+
+	Without arguments shows current version and state of Cshell
+	including the individual authors. You also get the current
+	version of the operation system.
+
+	With arguments you get the version and revision number of each
+	named object. See your AmigaDOS manual for details on version
+	information. The options correspond to the options of Commodore's
+	"version" command (which is launched internally ;-)
+
+    WAITFORPORT
+
+	Usage	: waitforport portname [seconds]
+	Example	: waitforport rexx_ced 5
+
+	Waits for a port to come up. Default time is 10 seconds.
+
+    WHEREIS
+
+	Usage	: whereis [-r] filename [ device1...deviceN ]
+
+	Options	:
+	 -r look on all drives.
+
+	If just a file name is given, whereis searches all subdirectories of
+	the current directory for that file. An asterisk '*' is appended to
+	the file. Wild cards are allowed for the file (no asterisk will be
+	appended then), but no path names. If additional arguments are
+	given, whereis searches only these paths, not the current directory.
+
+    WINDOW
+
+	Usage	: window [-fblsaq] [dimensions]
+
+	Options	:
+		-f	(front) Window to front
+		-b	(back)  Window to back
+		-l	(large) Window to maximum size
+		-s	(small) Window to minimum size
+		-a	(activate)
+		-q	(query) Lists screens and windows open
+		-w	(width) Ignore window width for option "-q" (query)
+
+	Various operations on CLI window. If dimensions are specified,
+	they must be in the form x y width height, with values separated by
+	spaces. Use dimension -1 for maximum value (eg, "window -1 -1 -1 -1"
+	is equivalent to "window -l"), and -2 for keeping current value.
+
+	The command "window -l" may be very useful on PAL machines to get
+	a full PAL window from your login sequence, or if you use overscan
+	WorkBench.
+
+	Option -q gives, for each Screen and Window currently open,
+	title, left edge, top edge, width, height, (depth).
+
+    WRITEFILE
+
+	Usage: writefile varname
+
+	Writes a set of words to stdout, one word per line. Note that the
+	name of the variable (var) must be supplied, not the value ($var).
+
+
+IX. SPECIAL VARIABLES
+---------------------
+
+There are a number variables, the write variable, that have a side effect on
+your system (e.g.  changing the title bar), and some others, the read
+variables, that tell you something about your environment (e.g.  the current
+shell version).  You can also overlay the write variables with a local
+variable, so any change only takes place while the current context is
+valid.
+
+LIST OF VARIABLES:
+------------------
+
+    _abbrev
+	Holds a number which lets you select the various modes of
+	command-abbreviation:
+
+	  0   internal commands and commands buffered with "rehash"
+	      can no longer be abbreviated  (same as "unset _abbrev")
+	  1   internal commands can be abbreviated
+	  2   commands buffered with "rehash" can be abbreviated,
+	      the first (partially) matching command from the list is taken
+	  4   commands buffered with "rehash" can be abbreviated,
+	      if the command matches a buffered command completely,
+	      then this is taken, else the first partially matching
+	      command from the list is taken
+	  8   if command wasn't found in Cshell's internal program list
+	      (built with "rehash"), then search DOS path-list
+
+	Numbers can be added to combine modes.
+
+	The main difference between '2' and '4' is that '2' does not
+	recognize a completely matching command if it has already
+	found a partially matching command earlier in the list.  Eg,
+	you type "ed" and you have (in this order) "EdPlayer" and
+	"Ed" in your list, then "Ed" can never be called (except with
+	absolute path). So '4' first seeks for a completely matching
+	command -- and if it cannot find anything then (and only then)
+	it searches for an abbreviated command.
+
+	Thus it makes obviously no sense to use '2' and '4' together.
+
+	By default, this variable is set to '5' (1+4).
+
+    _bground
+	True if the shell was started with a non-interactive input.
+
+    _clinumber
+	Contains the number (1-20) of current CLI.
+
+    _clipri
+	Task priority while editing command line.
+	(also affects filename completion)
+
+    _complete
+	This variable holds a DOS pattern. What files should match on
+	filename completion. Default is "*" (show all files). For example,
+	if you don't want to see files ending with ".o" and ".bak", set it
+	to "~(*.o|*.bak)".
+
+	This is similar to the variable "fignore" known from Unix (t)csh,
+	except that fignore is limited to extensions only and - on the
+	contrary to "_complete" - specifies which files should NOT be
+	listed.
+
+    _cquote
+	If set to some value, quotation marks are handled as
+	Commodore-Shell does, so that they are parsable by ReadArgs()
+	(function call in dos.library). Commodore-Shell treats quotes
+	within a string "as as". Only leading quotation marks "quote"
+	other special chars (like spaces). In contrast to UNIX shells
+	where quotation marks always "quote" other chars - regardless
+	of their position. UNIX behavior (_cquote unset) is default.
+
+    _cwd
+	Holds a string representing the current directory we are in from
+	root.  The SHELL can get confused as to its current directory if
+	some external program changes the directory.  Use PWD to rebuild
+	the _cwd variable in these cases.
+
+    _debug
+	Debug mode... use it if you dare.  must be set to some value
+
+    _dirformat
+	Holds a format string for option -z of builtin command "dir".
+	Used to keep aliases short and to bypass problems with dir's
+	format option "-z" (eg, it's not possible to specify other options
+	after -z without using @pickargs/@pickopts).
+
+	The format string is limited to a maximum of 80 characters.
+
+    _every
+	Contains the name of a command that is to be executed every time
+	just before the prompt is printed. Do not use this to echo the
+	prompt.
+
+    _except
+	See EXCEPTION
+
+    _failat
+	If a command returns with an error code higher than this, the
+	batch file aborts. The default is 20.
+
+    _hilite
+	Holds the font attributes used for highlighting. One letter for one
+	attribute:
+	  b    for bold
+	  i    for italic
+	  u    for underlined
+	  r    for reverse
+	  c3   for foreground color 3
+	  c3,2 for foreground color 3 and background color 2
+	Any combinations are allowed. _hilite defaults to "c7", in terminal
+	mode to "r".
+
+    _history
+	This variable is set to a numerical value, and specifies how far
+	back your history should extend. Set it to 0 to disable history,
+	for example if you test your programs for memory leaks. Defaults
+	to 50.
+
+    _insert
+	Sets the default for insert/overtype mode for command line editing.
+	ESC-i toggles between, but after <RET> the default is set back as
+	indicated by this variable. By default _insert is 1, unsetting
+	_insert will make overtype the default.
+
+    _ioerr
+	Contains the secondary error code for the last command. Will be
+	changed after every external command and after a failed internal
+	command. See @ioerr( )
+
+    _kick
+	holds version number of Operating System (version.library),
+	eg, 37, 38, 39, 40, ...
+
+    _kick2x
+	True if exec.library V37+ could be opened
+	(which means that kickstart 2.0 is around)
+
+    _kick3x
+	True if exec.library V39+ could be opened
+	(which means that kickstart 3.0 is around)
+
+    _lasterr
+	Return code of last command executed.  This includes internal
+	commands as well as external comands, so to use this variables
+	you must check it IMMEDIATELY after the command in question.
+
+    _lcd
+	Holds the name of the last directory. The builtin alias 'dswap'
+	cd's to that directory. If called again, you're back where you
+	were.
+
+    _man
+	The path and name of your .doc files. Defaults to 'csh:csh.doc'
+
+    _mappath
+	Cshell allows invocation of foreign shells if a script starts with
+	"#!" or ";!" followed by a command to execute.  To use unmodified
+	Unix scripts pathname-mapping is necessary to convert pathes like
+	"/usr/..." to, eg, "usr:...".  Set _mappath to enable this name-
+	mapping.  By default _mappath is unset ("/usr/" would be inter-
+	preted as relative AmigaDOS path).
+
+    _maxerr
+	The worst (highest) return value to date.  To use this, you usually
+	set it to '0', then do some set of commands, then check it.
+
+    _minrows
+	Gives the minimum number of rows a window must have to turn on quick
+	scrolling. Defaults to 34.
+
+    _nobreak
+	If set to some value, disables CTRL-C.
+
+    _nomatch
+	If set to some value, don't check patterns if they match.
+	(By default CSH aborts command execution if all patterns does not
+	 match. If at least one pattern matches CSH does not abort.)
+
+    _noreq
+	If set to some value, disables system requesters ("Please insert
+	volume ...."). Turned on in vt200 mode.
+
+    _passed
+	This variable contains the passed arguments when you SOURCE a file
+	or execute a .sh file.  For instance:
+
+	test a b c d
+
+	-------- file test.sh ----------
+	echo $_passed
+	foreach i ( $_passed ) "echo YO $i"
+	--------------------------------
+
+    _path
+	Tells CShell where to look for executable files. The current direc-
+	tory and the AmigaDOS path will be searched first. The trailing
+	slash for directories is not necessary any more.  The entire path
+	will be searched first for the <command>, then for <command>.sh
+	(automatic shell script sourcing). Example:
+		set _path ram:c,ram:,sys:system,dh1:tools,df0:c
+	(This path has the advantage that these directories need not even
+	 exist, that you can access devices (AmigaDOS path only knows
+	 volumes under Kick 1.3) and that no disk seeks happen at startup)
+
+	The usage of _path is NOT recommended anymore, use the AmigaDOS
+	search path instead (builtin command "path").
+
+    _prghash
+	The filename where the program hash list (command 'rehash')
+	is loaded from and saved to.
+
+    _prompt
+	This variable now can contain the following control characters:
+	 %c  for color change. This highlights your prompt. See _hilite
+	 %e  for elapsed time. The time the last command took to execute.
+	 %m  for memory. This shows your current memory in K
+	 %t  for time. This shows your current time in the format HH:MM:SS
+	 %d  for date. This shows the current date in the format DD-MMM-YY
+	 %p  for path. This inserts the complete current path
+	 %P  for path. This inserts the current path (see also _promptdep)
+	 %V  for volume. This inserts the current volume
+	 %n  for number. This inserts the current process number
+	 %v  for version. This shows the version number of CShell
+	 %h  for history. This displays the current history number
+	 %f  for free store. This shows the free store on the current drive
+	 %r  for pRiority. Inserts the task priority of the current
+	 %s  for shells open. Inserts the result of 'howmany'
+	 %U  for user. Shows current user (only with "MultiUser" package)
+	 %x  for external cmd return code. Yields the last error code
+	The default for prompt is now "%c%p> "
+	The  if  command  will  set the prompt to a '_ ' if commands are
+	disabled while waiting for a 'endif' or 'else' command (interactive
+	mode only).
+
+    _promptdep
+	Prompt path depth. Holds the maximum number of directories (path
+	parts counting from the right) displayed for "%P" (see _prompt) to
+	keep prompt smart and short. _promptdep must be greater 0.
+	The internal default for "%P" is to display 3 directories.
+
+	The missing path components will be marked with "...". The path
+	components won't be replaced with "..." if the three dots don't
+	make the path shorter.
+
+    _pipe
+	The directory where temporaries are stored. Default: 'T:'
+
+    _qcd
+	Holds the name of the file where the all directories on your hard
+	disk are stored. If not set, disables quick cd-ing.
+
+    _rback
+	Is the name of the command to be the prepended to the command line
+	when '&' was added to it. Defaults to 'rback', can't be a multi
+	word command yet.
+
+    _rxpath
+	The same as with _path, but this is where CShell looks for .rexx
+	files. Defaults to REXX:
+
+    _scroll
+	Holds the number of lines to be scrolled at once when quick
+	scrolling is used. If unset or <=1, quick scrolling is off.
+	Defaults to 3.
+
+    _terminal
+	Indicates whether or not shell was started in terminal mode.
+
+    _timeout
+	Set the timeout period (in microsends) for the connected terminal to
+	respond to a WINDOW STATUS REQUEST (special Amiga control sequence
+	to get window bounds). Only used in terminal mode, of course.
+
+	For local usage a small value is sufficient, for remote usage (eg,
+	over a serial line) the value should be much higher (eg, 500000,
+	which a 1/2 second).
+
+    _titlebar
+	The same control characters as for the _prompt can be used for
+	_titlebar, too. The only difference is that %c is ignored. The
+	titlebar is updated every time before the prompt appears.
+
+    _verbose
+	If set to 's', turns on verbose mode for source files (every command
+	will be displayed before being executed). If set to 'a', displays
+	all substeps while alias substitution. 'h' will hilight the debug
+	output. Any combination allowed: set _verbose sah
+
+    _version
+	Contains the version number of the shell, e.g. 510.
+
+
+X.   FUNCTIONS
+--------------
+
+    FUNCTIONS
+	Functions are preceded by an @-sign and may not be abbreviated
+	They must be preceded by a blank and a blank must follow the opening
+	and precede the closing parenthesis. There must be no blank between
+	the function name an the opening parenthesis. Example:
+	   echo @info( df0: )
+	(NOTE: Later versions of Shell might allow that functions need not
+	       be at the beginning of an argument, so quote any @-signs not
+	       used for functions)
+
+	Functions may be nested. The function names themselves are case
+	sensitive, but the operations (like strcmp) aren't.
+
+	Functions can be used as commands. They will echo their return value
+	to stdout. Note that they can't be abbreviated and that the function
+	list is searched after the command list. Example:
+		drives          ---> DF0: DH1: DH2: RAM: WB_2.x:
+	Therefore, functions can also be used like this:
+		echo $(drives)
+
+	So far, functions are not user definable.
+
+	Note the difference between sets of words and strings. After
+	  set var hello world
+	$var is a wordset, but after
+	  set var "hello world"
+	var is one string. Although they look the same if echoed, they
+	behave different, for example in 'foreach i ( var ) "echo hi'. The
+	functions @split and @concat convert the two forms.
+
+
+LIST OF FUNCTIONS:
+------------------
+
+    @abbrev( str1 str2 [len] )
+	true if the first <len> chars of str1 are an abbreviation of str2
+    @abs( num )
+	returns absolute value of <num>
+    @age( file )
+	the age of that file in days, null-string if file not found
+    @age_mins()
+	the age of that file in minutes, null-string if file not found
+    @appsuff( name suffix )
+	appends an suffix ( .ZOO ) to a string if it's not already there
+    @arg( arg ... arg )
+	see @pickargs( )
+    @ask( title item ... item )
+	asks for confirmation of every item and returns the confirmed ones
+	(very similar to @confirm(), but default is negative)
+    @availmem( [type] )
+	returns free 'chip', 'fast' or otherwise total memory
+    @basename( path ... path )
+	returns the file name parts of the paths
+    @center( word len )
+	returns a string of length <len> with <word> centered in it
+    @checkport( portname )
+	indicates if given port exists
+    @clinum( procname )
+	returns the number of the cli identified by a name or a number
+    @complete( abbrev word ... word )
+	returns the first word <abbrev> is an abbreviation of
+    @concat( word word ... word )
+	concats all words in one blank separated string, see @split
+    @confirm( title item ... item )
+	asks for confirmation of every item and returns the confirmed ones
+	(very similar to @ask(), but default is positive)
+    @console( STDIN|STDOUT )
+	tells whether stdin or stdout are interactive (not redirected)
+    @dectohex( number )
+	returns a string representing <number> in hex
+    @delword( word word ... word n )
+	returns a string with the n-th word deleted.
+    @delwords( word word ... word n m )
+	deletes the next m words from the n-th.
+    @dirname( path )
+	strips the base name from a path, just returns the directory
+    @dirs( name name name name )
+	returns the directories among the given file names, see @files
+    @dirstr( lformat file )
+	returns any info (size, date, file comment) about a file
+    @drive( path )
+	outputs the drive ( device ) name associated to <path>
+    @drives( )
+	outputs all available drives
+    @exists( file )
+	tells whether a file exists or not
+    @fileblks( file file ... file )
+	returns the # of blocks needed for the files, incl. dir blocks
+    @filedate( file )
+	returns a string representing the date of the given file
+    @fileinfo
+	Equivalent to @dirstr
+    @filelen( file file ... file )
+	count the total number of bytes of the given files
+    @filenote( file )
+	returns filenote of given file
+    @fileprot( file )
+	returns a string like ---arwed
+    @filereq( title path&pattern filename )
+	brings up the ASL file requester and returns the selected file name
+    @files( file file ... file )
+	gives you the files among those names, no directories. see @dirs
+    @filesize
+	Equivalent to @filelen
+    @flines( varname )
+	counts the number of lines in a readfile-file (faster than @words)
+    @freebytes( path )
+	the number of free bytes on the given path
+    @freeblks( path )
+	the number of free blocks on the given path
+    @freestore( path )
+	the amount of free store on that path, given in K, M and G
+    @getenv( varname )
+	returns the value of the named env: variable
+    @getclass( file )
+	returns the class (type) of the file. See chapter XIV
+    @hextodec( hex-number )
+	returns a string representing <hex-number> in dec
+    @howmany( )
+	indicates the # of shells running
+    @index( string pattern )
+	returns the index of pattern in string (starting at 1),
+	0 if not found
+    @info( path )
+	the corresponding line from the 'info' command, each entry a word
+    @intersect( word1 word2 word3 , word4 word5 word6 )
+	returns all words which are in both lists. see @union, @member
+    @ioerr( num )
+	returns the corresponding error string to num
+    @lookfor( file paths )
+	looks for a file in the current directory and the paths. See $_path
+    @lower
+	lowercases its arguments. see @upper
+    @match( word ... word "pattern" )
+	returns the words in the list that match the DOS-pattern
+    @max( num num ... num )
+	computes the maximum of all given numbers
+    @megs( number )
+	expresses a number in K, M and G (-bytes), rounded correctly
+    @member( word1 word word ... word )
+	tells you if word1 is among the remaining words
+    @min( num num ... num )
+	computes the minimum of all given numbers
+    @mix( arg1 ... argn )
+	randomly mixes its arguments
+    @mktemp( )
+	returns a unique temporary file name of form T:tmpXXXXXXXX,
+	or just tmpXXXXXXXX if T: does not exist
+    @mounted( device )
+	returns a boolean indicating whether the specified device is mounted,
+	(don't add an extra colon ':' at the end)
+    @nameext( filename )
+	returns all after the last dot of <filename>.
+    @nameroot( filename )
+	returns all before the LAST dot of <filename>.
+    @opt( arg ... arg )
+	see @pickopts( )
+    @pathname( path )
+	obsolete. use @dirname
+    @pickargs( arg ... arg )
+	picks of its arguments those which don't start with a '-'
+    @pickopts( arg ... arg )
+	picks of its arguments those which start which a '-'
+    @rnd( seed )
+	returns a 32 bit random number (default seed is 1);
+	'seed' is optional and can be used to set new seed for @rnd( ),
+	if you use seed=0 then CSH takes current system time as seed
+    @rpn( expression )
+	computes the rpn expression. See rpn command
+    @scrheight( )
+	outputs the current height of the screen the shell is running in
+    @scrwidth( )
+	outputs the current width of the screen the shell is running in
+    @sortargs( name ... name )
+	sorts its arguments alphabetically
+    @sortnum( number ... number )
+	sorts its arguments numerically
+    @split( string )
+	makes each blank separated part of @string a word, see @concat
+    @strcmp( name name )
+	returns -1, 0 or 1 depending of alphabetical comparison
+	(case-sensitive)
+    @stricmp( name name )
+	returns -1, 0 or 1 depending of alphabetical comparison
+	(case-insensitive)
+    @strhead( breakchar string )
+	see strhead command
+    @strleft( string number )
+	see strleft command
+    @strmid( string n1 n2 )
+	see strmid command
+    @strright( string n )
+	see strright command
+    @strtail( breakchar string )
+	see strtail command
+    @subfile( varname n m )
+	like @subwords, but acts on a readfile-file and is faster
+    @subwords( word ... word n m )
+	returns the next m words word of the given list starting from n
+    @tackon( path file )
+	see tackon command
+    @trim( word word word )
+	removes all leading and trailing blanks from the words
+    @unique( word ... word )
+	sorts the arguments and makes each of them unique
+    @union( name ... name , name ... name )
+	returns all names that are in either list. See @intersect, @member
+    @upper( word ... word )
+	upper cases the given words. see @lower
+    @volume( path )
+	returns the volume name in that path or ""
+    @wincols( )
+	returns the number of columns in the current shell window
+    @winheight( )
+	outputs the height of your window in pixels
+    @winleft( )
+	returns the left edge of your window
+    @winrows( )
+	returns the number of lines in the current shell window
+    @wintop( )
+	returns the top edge of your window
+    @winwidth( )
+	outputs the width of your window in pixels
+    @without( name ... name , name ... name )
+	returns all names of list 1 that are not in list 2
+    @word( name ... name n )
+	picks the n-th word from the list.
+    @words( name ... name )
+	returns the number of words in the list.
+
+
+XI. MISCELLANEOUS
+-----------------
+
+	CShell now allows to do quick scrolling in large windows. Quick
+	scrolling means that whenever the cursor reaches the bottom of
+	the window, the text jumps up 3 or more lines at once. However,
+	only the following commands support this:
+	    dir, cat, htype, strings, search, truncate, tee
+	You can choose the number of lines to scroll at once by setting
+	the variable _scroll. Unsetting it or setting it to a value <=1
+	completely disables quick scrolling.
+	You can also choose the number lines a window must at least have
+	to turn on the quick scrolling by setting the _minrows variable.
+	(Defaults to 34). Quick scrolling is automatically disabled when
+	the command is redirected. By piping any command to cat, you can
+	force it to quick scroll. Example:  List | cat
+
+	CShell now can be terminated using the closing gadget in the
+	AmigaDOS 2.0 shell window. Don't execute c:ENDCLI while using
+	the shell. This can cause problems with external commands. The
+	closing button provides a 'quit' command. You can define
+	  alias quit "Endcli;\\quit
+	to assert that the CLI window closes when you click the button.
+
+
+    EXCEPTIONS
+	If  no  _except variable exists, any command which fails causes the
+	rest of the line to abort as if an ABORTLINE had been executed.  If
+	the _except variable exists, it is of the form:
+
+	"nnn;commands..."
+
+	where  nnn  is  some  value  representing  the  minimum return code
+	required  to  cause  an  error.   Whenever a command returns a code
+	which  is  larger  or  equal  to  nnn,  the commands in _except are
+	executed  before  anything.   WHEN _except EXISTS, THE COMMAND LINE
+	DOES  NOT  ABORT AUTOMATICALLY.  Thus, if you want the current line
+	being executed to be aborted, the last command in _except should be
+	an "abortline".
+
+	Exception  handling  is  disabled  while  in the exception handling
+	routine (thus you can't get into any infinite loops this way).
+
+	Thus if _except = ";", return codes are completely ignored.
+
+	Example:
+
+	set _except "20;abortline"
+
+
+XII. EXAMPLE SOURCE FILES
+-------------------------
+
+If from a CLI or the startup-script you say 'SHELL filename', that file is
+sourced first.
+
+### compat.sh ###
+
+# this makes sure that your old abbreviations don't call new commands
+
+alias as  aset
+alias cl  close
+alias g   goto
+alias h   help
+alias he  help
+alias m   md
+alias q   quit
+alias re  rename
+alias w   window
+
+alias kr  "rm -r ram:* >NIL:
+
+### End of compat.sh ###
+
+
+Moreover, if you have a file called S:.cshrc, it will be sourced for every
+Shell you run. This is useful for aliases and setting that you want in ALL
+Shells.
+
+
+### Example S:.cshrc ###
+
+Here is an example .cshrc file:
+
+set F5 "cdir WORK:"^M
+set f9 "ed s:login.sh"^M
+set F9 "ed df0:s/startup-sequence"^M
+
+alias toram  "%q foreach i ( $q ) \"cp -r $i: ram:$i >NIL:;assign $i: ram:$i
+alias ramop  "md RAM:op; assign OP: ram:op
+alias noop   "assign OP: ; rm -r ram:op
+alias newop  "rm -r OP:*
+alias dc     "dfc df0: to df1:
+alias go     "%q assign WORK: Boot:$q; cd WORK:; source startme.sh
+alias get    "%q cp $q RAM: >NIL:
+alias filter "%a%b%c exec $b \\<$a \\>$c
+	# reads $a, filters it with $b and writes result to $c
+
+alias rm     "%q \\rm @confirm( Remove $q )
+# or if you want a more safe one
+alias qrm    "%q \\rm @ask( Remove $q )
+
+#alias rm     "%a set f @pickargs( $a );set opts @pickargs( $a );\
+# e -n OK to delete @words( @files( $f ) ) file(s) and @words( @dirs( $f ) )\
+# directories\"? \";input b;if $b = y;\\rm $opts $f;endif
+#		# for the anxious among us: confirmed rm
+
+set _prompt   "%c%p> "
+	# this puts the path highlighted in the prompt
+
+# this one puts cli number, free mem, date and time in title bar
+set _titlebar "Shell %n    Mem %m     Date %d    Time %t
+
+# This file will be sourced for every Shell you start
+
+### End of example .cshrc ###
+
+****************************************************************************
+
+If you are a CLI user, your startup-sequence may be as simple as:
+
+	C:csh S:startup.sh
+
+Here's a startup code:
+
+### Example S:startup.sh ###
+
+wind -l	# if you are on a PAL machine, or use overscan
+	# note that commands may be abbreviated (wind=window)
+
+assign LC: Stuff:c  INCLUDE: Stuff:include   LIB: Boot:lib   QUAD: RAM:
+
+rback C:FaccII; sleep 1
+	# after spawning a process, it is always better to allow it
+	# to load the command, to avoid excessive drive head movement
+
+resident -d blink lc1 lc2 >NIL:	#defer loading
+
+C:PopCli 300 C:Newcli 		#using full pathname loads faster
+C:FF -1 Siesta.font >NIL:
+C:Patch_1 >NIL:
+stack 8000			# lc1 and lc2 need this
+
+source S:setdate.sh		# this is listed next
+
+### End of example startup.sh ###
+
+****************************************************************************
+
+The following is an example source file to set date and time; it may be
+used at startup if you don't have an internal clock.
+
+### setdate.sh ###
+
+open CON:200/100/440/80/SetDate write 1
+echo >.1 -n "Current date is "
+date >.1
+echo >.1 -n "Please enter date: "
+input <.1 d
+close 1
+strlen len $d
+if $len > 1 ; date $d ; endif
+echo -n "New date: " ; date
+
+### End of setdate.sh ###
+
+***************************************************************************
+
+Next comes a makefile that needs no Make program: may be executed from
+Shell directly!!!
+
+### make.sh ###
+
+if -t Shell.syms Shell.h; cc +HShell.syms Shell.h; rm shell.o; endif
+if -t RAM:Shell.syms Shell.syms; cp -d Shell.syms RAM:; endif
+
+foreach i ( main comm1 comm2 comm3 execom globals rawconsole run set \
+ sub ) "if -t $i.o $i.c; echo Compile $i...;cc +IRAM:shell.syms $i.c; endif"
+
+# we used line continuation for better visibility. this is not necessary,
+# you can type it all in one line. no more limit of 256 bytes per line
+
+if -t Shell run.o main.o comm1.o comm2.o comm3.o execom.o \
+set.o sub.o globals.o rawconsole.o
+	ln  +q -m -o Shell run.o main.o comm1.o comm2.o comm3.o\
+	execom.o set.o sub.o globals.o rawconsole.o -la -lc
+endif
+
+### End of make.sh ###
+
+
+XIII.  DEFAULT VALUES
+---------------------
+
+Some aliases are predefined whenever you start a new Shell. These are:
+
+    CDIR
+	Use "cdir directory" to clear the screen, set CD to directory,
+	and list it.
+
+    CLS
+	Simply clear the screen.
+
+    DSWAP
+	Exchanges current and the previous current directory. For use in
+	scripts as the symbol for last current directory may change.
+
+    EXIT
+	Leave Shell and exit CLI.
+
+    MANLIST
+	Display  a list of possible arguments to man.
+
+    RX
+	Executes a REXX script. Prevents unwanted starting of 'rxrec'.
+
+Moreover, many variables have default values, and many function keys are
+predefined. You can use set command to determine all of these.
+
+
+XIV.  OBJECT ORIENTED FEATURES
+------------------------------
+
+File classes are good for two things: Identifying files and command over-
+loading. The latter means that the same command with files of different
+type performs completely different actions.
+
+    CLASSES OF FILES
+
+	You can define a class of files using several 'class' commands.
+	Here a simple example:
+
+	  class picture  suff=.pic suff=.iff suff=.ilbm
+	  class anim     suff=.anim
+
+	From now on, everything with the suffix .pic, .iff or .ilbm will
+	be identified as a picture. Please note that there may be no blanks
+	between the names and the '=', and that blanks inside the names
+	must be put in quotes. So these are the ways to identify a file:
+
+	  suff=.doc        True if the suffix of the file is .doc
+	  name=readme      True if the file is "readme"
+	  name="mod.*"     True if the name starts with 'mod.'
+	  offs=14,DC..C4FD True if the bytes starting at $14 are $DC,
+	                   anything, $C4, $FD  (all numbers hexadecimal!).
+	                   Each pair of dots means one byte ignored.
+	  chars            True if 90% of the bytes in the file are 32..127
+	                   or 9..13
+	  default          Always true, used to define the default type
+
+	Note that only the first character is examined, so 's' = 'suff'.
+	One class can be identified by more than one 'class' statement.
+	They are looked at in the same sequence they were entered. So to
+	make sure that an zoo archive misnamed as .lzh is identified
+	correctly, use the following 'class' statements:
+
+	  class zoo offs=14,DCA7C4FD
+	  class lzh offs=2,2D6C68..2D
+	  class zoo suff=.zoo
+	  class lzh suff=.lzh
+
+	Moreover, there is a builtin class 'dir', which means directory.
+	Now we know many file types. But what to do with them? This is
+	where we define 'actions'.
+
+    ACTIONS ON CLASSES
+
+	There may be one or more 'class' commands that define what actions
+	need to be taken in various cases for that specific class:
+
+	  class zoo actions view="zoo -list" extr="zoo -extract"
+	  class lzh actions view="lz l"      extr="lz e"
+
+	Whenever somebody tries to 'view' a test.zoo, the command
+	'zoo -list test.zoo' will be issued, but if he tries to
+	view test.lzh, then 'lz l test.lzh' will be executed. Note
+	that any command supplied here goes through the normal csh
+	parser, so AmigaDOS and csh paths will be searched. Aliases
+	with arguments are allowed here, too, so whatever the user
+	typed will be stored in the variable after the '%'.
+
+	How do I tell a file that I want to 'view' it? There comes the
+	second command used for object oriented features:
+
+	  action view test.zoo
+
+	will first identify the type of that file and then apply, if
+	possible, the 'view' action to it. Of course, this works best
+	inside an alias:  alias v "action view" will define a v-command
+	that views all types of files known to cshell. Similarly, you
+	can define   alias xtr "action extr" and use this command to
+	extract files from any type of archive.
+	There is one action that will be sent to every file that you
+	try to start but is not executable. This action is 'exec'.
+	Assume you have defined the class 'picture', then after
+
+	  class picture actions view=Mostra exec=Mostra
+
+	you can display a picture using Mostra by just typing its name.
+	More builtin actions like 'rm' and 'dir' may be implemented,
+	so don't use command names for action names.
+
+	The batch file class.sh defines a few useful classes.
+
+    SUPERCLASSES
+
+	Assume you have a class for .c files, one for .h files, and
+	one for .asm files. You might want to make the difference
+	between them when identifying them, but in the end, they're
+	all ASCII, aren't they? You can stat this with the command
+
+	  class c_source suff=.c is=ascii
+
+	Now whenever an action on a file of the type c_source fails,
+	the file is interpreted as of type ascii, and the same
+	action is attemted again. This goes on until a class has no
+	more superclass.
+
+
+XV.     KEYMAPS
+---------------
+
+	You define a keymap as a collection of key/function pairs. Both
+	are given as numbers. There can be several keymaps which activate
+	each other, but at first we only edit keymap 0, which is active
+	at the beginning. All keys you define will eventually overwrite
+	the old definitions in an existing keymap. Everything marked with
+	a (*) is not yet implemented.
+
+    KEYCODES
+
+	1..255    The corresponding ASCII character
+	256	  Up Arrow
+	257	  Down Arrow
+	258	  Right Arrow
+	259	  Left Arrow
+	260	  Help
+	261..270  F1..F10  (unshifted)
+
+
+	Modifiers (add them to the key code)
+
+	512       SHIFT (only necessary for arrows and fkeys)
+	1024      ESC   (was pressed & released before this key)
+
+    EDITFUNCTIONS
+
+	- Movement      Move cursor...
+	 0  CursLeft    1 left
+	 1  CursRight   1 right
+	 2  WordLeft    1 word left
+	 3  WordRight   1 word right
+	 4  BegOfLine   to beginning of line
+	 5  EndOfLine   to end of line
+
+	- Deleting      Delete...
+	10  Backspace   char left from cursor
+	11  Delete      char right from cursor
+	12  BkspcWord   word left from cursor
+	13  DelWord     word right from cursor
+	14  DeleteToSOL to start of line
+	15  DeleteToEOL to end of line
+	16  DeleteLine  whole line
+	17  DelScreen   whole screen and refresh current line
+
+	- History insert
+	20  Back        Move one line back in history
+	21  Forward     Move one line forward in history
+	22  Beg         Move to first line in history
+	23  End         Move to last line in history
+	24  Complete    History retrieve like '!'
+	25  Exec        Execute history line & bring up next
+	26  Tail        Insert previous line except first word
+	27  Bottom      Go below last history command
+	28  DupWord     Duplicates the last word on this line
+	29  LastPrev    Insert last word of previous line
+
+	- Completion
+	30  Normal      Insert first matching file (or cycle)
+	31  Partial     Insert common substring of all matching files
+	32  All         Insert all matching files
+	33  Directory   Find dir in quick cd list
+	34  LastCD      Insert last current directory
+	35  Show        Shows all matching files
+	36  CompPrg1    Insert first matching program (or cycle)
+	37  CompPrgAll  Shows all matching programs
+
+	- Special
+	40  Insert      Toggle Insert/Overwrite
+	41  Quit        Silently perform 'quit'
+	42  Help        Silently perform 'help'
+	43  Refresh     Redraw current line
+	44  Execute     Execute current line
+	45  Leave       Edit new line, store this in hist
+	46  EOF         Terminate shell
+	47  NOP         Do nothing
+	48  Echo^O      Echoes a ^O
+	49  Beep        Echoes a ^G
+
+	- Other
+	50  Fkey        Execute command associated to last fkey
+	51  Menu        Execute command associated to last menu
+	52  Undo        Undoes last edit
+	53  Repeat      Repeats last function
+	54  SwapChar    Swaps the two chars left of cursor
+	55  QuoteChar   Quote next char
+
+
+	Command types
+
+	0   +x	  Editing function x, see above descriptions
+	512 +x	  Setmap x,     x=0..7
+	1024+x	  Insert key x, x=1..255
+	1536+x	  Macro x       x=1..15         (*)
+	2048+x	  String x      x=1..15         (*)
+
+	Examples:
+
+	keymap 0    66=49    # the  B key will beep
+	keymap 0     2=16    # ^B key will erase line
+	keymap 0  1122=35    # ESC-b will show matching files
+	keymap 0 9=31 521=30 # Swaps TAB and SHIFT-TAB
+
+	keymap 0 260=47      # do nothing on help
+	keymap 0 12=17       # clear screen and refresh line on ^L
+	keymap 0 18=29       # insert last word of prev line on ^R
+
+
+XVI.    SCROLLING
+-----------------
+
+console.device
+--------------
+
+Ever wondered why Commodore's shell scroll a standard ASCII text file
+very fast and why CSH scrolls (despite line-buffering in most commands)
+the same text file at a noticable slower speed?
+
+Now, first of all it must be said that CSH uses the same console
+environment as Commodore's shell does.  So in fact both shells will
+scroll at the SAME speed -- provided that they're configured in a
+similar way.
+
+Excerpt from "console" autodoc:
+
+| 	V39 console.device takes advantage of the ability to mask
+| 	bitplanes for faster scrolling, clearing, and rendering.
+| 	The actual number of bitplanes scrolled depends on which
+| 	colors you set via the SGR sequences.  For those using
+| 	the defaults of PEN color 1, and cell color 0, console.device
+| 	only needs to scroll 1 bitplane.  The actual number
+| 	of bitplanes scrolled is reset when ESCc is sent, and when
+| 	the console window is entirely cleared (e.g., FF).  In
+| 	general this should cause no compatability problems, unless
+| 	you are mixing console rendering with graphic.library calls
+| 	in the same portions of your window.  Console.device considers
+| 	the number of bitplanes it must scroll, and the screen display
+| 	depth so that interleaved bitplane scrolling can be taken
+| 	advantage of in cases where performance is not significantly
+| 	affected (interleaved scrolling, and masking are mutually
+| 	exclusive).  The determination of how many planes to scroll
+| 	is undefined, and may change in the future.
+
+In other words:
+
+After opening a window or sending ANSI sequences that clear the window
+(ESC c, FF) the console.device checks how much bitplanes are in use.
+The number of bitplanes depends on the number of colors used in this
+window.
+
+If there's only 1 color in use (this is default in Commodore's shell)
+then console.device can perform very fast scrolling because only one
+bitplane needs to be scrolled.
+
+The scroll speed becomes slower the more colors you use.  Lots of
+programs use at least one additional color by default.  This looks
+nice but slows down scrolling.  Besides others, CSH is one of the
+programs that make use of additional colors.  By default CSH has a
+colored prompt.  And some internal commands like "dir" use a color
+to highlight text.
+
+With the variable "_hilite" you can control how CSH highlights text.
+If you type "set _hilite b" then text will be highlighted by making
+it bold.  See "man _hilite" for further information.
+
+If you want really fast text scrolling then avoid using colors in text
+output. For example, add "set _hilite b" in your "s:.cshrc" file.  And
+configure other programs (like NewList, a very cool directory lister
+by Phil Dietz) so that they don't use colored output.
+
+If you have to use colored text (for any reason) then clear the window
+as soon as possible to allow the console.device to re-enable fast text
+scrolling.
+
+ALWAYS REMEMBER:
+
+To enable fast scrolling you must clear the screen (ESC c, FF) first.
+
+As soon as you use more than one color in your text output,
+console.device switches back to normal (slow) scrolling automatically.
+Then you have to clear the screen manually to re-activate optimized
+(fast) scrolling.
+
+
+CpuBlit
+-------
+
+You're running CpuBlit and you wonder why under Kickstart 2.x text
+scrolls faster than under Kickstart 3.x.
+
+Check if you call CpuBlit with option "-b". This option MUST be set
+to allow CpuBlit the handling of (so called) "broken" bitmaps.
+

@@ -1,0 +1,242 @@
+Feel free to fill in any subset of the questions below.  Delete unused
+sections, and send the questionnaire the address in csh.doc.  I prefer
+electronic responses to printed ones, so if you want to send this to me,
+please do it on disk or via e-mail.  Also understand that I cannot reply
+to all snail mails, but your answers are appreciated anyway.
+
+Thanks for your time
+   -Dominik
+
+----------------------------------------------------------------------------
+                            SYSTEM CONFIGURATION
+
+>Please insert your full address or signature here:
+
+
+
+>Do you have access to FTP?
+>Do you have access to IRC?
+
+>Your system....
+>Computer   :
+>CPU        :
+>OS version :
+>Csh version:
+>Chip mem   :
+>Fast mem   :
+>HD         :
+
+----------------------------------------------------------------------------
+                                   RATING
+
+Please judge the following aspects with marks from 1..9, where 9 is best.
+
+>Memory usage: 1=much too much, 9=no problem at all
+>Executable size: 1=much too many builtins, 9=no problem
+>Scripting speed: 1=much too slow, 9=couldn't be faster
+>Scripting consitency: 1=unlogical, 9=fine
+>Unix feeling: 1=no similarity, 9=perfect
+>Stability: 1=crashes all the time, 9=seen no crash so far
+>Docs for beginners: 1=very hard to get into it, 9=perfect
+>Docs for experts: 1=totally chaotic, 9=very helpful
+>General rating: 1=bull shit, 9=the shell of my dreams
+
+>General rating (how do you like Csh):
+
+
+
+----------------------------------------------------------------------------
+                                 COOPERATION
+
+>Would you like to beta-test future releases of csh? Note this means
+>work for you, not just getting new csh versions earlier.
+>Would you like to add features to csh?
+>If yes, which?
+
+----------------------------------------------------------------------------
+                                 BUG REPORT
+
+>Please fill in the SYSTEM CONFIGURATION section, too.
+>
+>Bug description:
+
+
+>Does it always happen?
+>Are there csh versions it does not happen with?
+>Have you any tools running that could cause the problem?
+
+----------------------------------------------------------------------------
+                                COMPATIBILITY
+
+>May compatibility with some old amiga csh scripts be sacrificed in favor
+>of increased UNIX compatibility?
+
+>Features of UNIX csh that should be implemented in Amiga csh:
+
+>Same 'foreach' syntax:
+>Same 'set' syntax:
+>A 'while' command:
+>A 'case' command:
+>'if $a -eq b':
+>History modifiers:
+>{ } variable modifiers:
+>Same head/tail syntax (would be incompatible with current version):
+>The ~ character as alias for $home instead of previous current directory
+>Others:
+
+
+>Other features that would be a compatibility problem:
+
+>Turn off command abbreviations by default:
+>Enable @-functions not only at beginning of argument:
+>if -t returns FALSE if both files have the same date:
+
+----------------------------------------------------------------------------
+                                 MISC ISSUES
+
+>Is scripting speed an issue?
+>Do you think greatly improved speed would open a new field of applications
+>for csh (e.g. replacing BASIC or AREXX for small programs)? 
+>Does dynamic memory usage have to be reduced?
+
+----------------------------------------------------------------------------
+                                  SUBSHELLS
+
+>Lots of people have been asking for concurrent (async,real) pipes. This means
+>that all programs in a pipe are started simultaneously, so that the output
+>at from the first program reaches the last one before the first one has 
+>terminated.
+
+>Question: Do you want concurrent pipes? This has some disadvantages.
+>After a 'dir | more' you could not scroll pack because pipe devices are
+>not seekable.
+
+>There is a second disadvantage: Any program in a pipe would have to be
+>run in the background. But what if it is a built in Csh command? This
+>will not work. Therefore, every command will have to be started in a 
+>subshell. The line
+> foo | bar        becomes
+> rback csh -c foo >pipe:pip1;rback csh -c bar <pipe:pip1
+>But it comes even worse: What if 'foo' was an alias? Thus the subshell
+>would have to know about all aliases and variables of the current shell.
+>This is where I ask for your opinion. Should subshells receive a local
+>copy of all parent shell variables? Or should they be able to modify
+>all the parent shell's non-local variables? It does not make much difference
+>if subshells are only used for pipes, but if they are available to the
+>user, too, one should give them thought. So which if the solutions do
+>you prefer or do you know others?
+
+----------------------------------------------------------------------------
+                                    IDEAS
+
+>Have you though of a nice feature you'd like to see in csh?
+>These are some of the features I'm planning to implement. Please pick the
+>ones you like best by deleting the others. I can't implement all this so
+>I'll pick what was opted most often.
+
+>After I've gotten the first replies, I feel the urge to add the
+>following plea: PLEASE *DO* DELETE SOME!   :-)
+
+These are the features that probably will be implemented. The number
+at the end of every line is the difficulty level, 1=easy.
+  _rawcon sets console to raw                               1 <-
+  dir -s sorts columnwise                                   1 <-
+  dir -notitles                                             1 <-
+  'builtin' and 'external' override aliases                 1 <-
+  'shift' kills first word in var                           1 <-
+  'elsif'                                                   1 <-
+  @a0tolf()                                                 1 <-
+  'continue' command  (does the same as the C equivalent)   1 <-
+  'break' command     (does the same as the C equivalent)   1 <-
+  /=$_root, ~/=$_home                                       1 <-
+  'a=100' for 'set a 100'                                   1 <-
+  $var# for @words( var )                                   1 <-
+  @strins, @strdel                                          1 <-
+  supply error msg if action failed                         1 <-
+  allow multi word strings in $_rback                       1 <-
+  filenote containing CLASS: -> same as class               1 <-
+  starting csh directly from workbench                      2 <-
+  use rawkeys so ALT and any CTRL combinations can be used  2 <-
+  startup file specified in icon                            2 <-
+  allow scripts to have 'csh' as default tool               2 <-
+  shell as AppIcon or even AppWindow                        2 <-
+  make the dir -s display mechanism available to user       2 <-
+  subclasses                                                2 <-
+  @subfile same as subwords, but works with varname (fast)  2 <-
+  copy -m works recursively                                 2 <-
+  error msg from inside batch file contains line number     2 <-
+  jump to error on the command line                         2 <-
+  . = source                                                2 <-
+  keymap support for macros                                 2 <-
+  faster internal handling of sys vars                      2 <-
+  REXX messages can be received whenever the prompt shows   2 <-
+  title bar update every 10 seconds or so                   2 <-
+  dir -recursive                                            2 <-
+  i-bit, set if corresponding .info file exists             2 <-
+  echo $hello[$i] is the same as echo @word( hello $i )     2 <-
+  'while' command                                           2 <-
+  'switch' 'case'                                           2 <-
+  'which'                                                   2 <-
+  expressions: eval i 2*(17+5) or set i @eval( 2+3 )        2 <-
+  environment inheritance: subshells learn all aliases      3 <-
+  total parser rewrite; expected speed increase 300%        3 <-
+  'rxreturn' returns strings to the rexx originator         3 <-
+  async rexx port                                           3 <-
+  $[   ] for expression evaluation                          3 <-
+
+
+The are the features that are less likely to be implemented:
+  @screenheight, @screenwidth                               1
+  make basename UNIX compatible                             1
+  every command should accept STDIN as file name            2
+  history substitution using ^ ^                            3
+  @newsuff( ) appends new suffix, maybe 'newsuff' command   1
+  @sortnew( ) sorts by date (less efficient than dir -t)    2
+  @quote( )  quotes args with blanks                        1
+  lformat for 'dir' titles                                  2
+  env:cshdefaults contains startup opts                     1
+  bug: preformat: ` inside args                             1
+  @eof()                                                    2
+  @numrows, @numcols                                        1
+  restore _noreq on exit                                    1
+  color change in lformat                                   2
+  bug: forever input <.1                                    3
+  remove leading blanks inside blocks in source files       2
+  history completion accepts patterns                       2
+  make @()= overridable                                     3
+  'error' can set secondary result                          2
+  @classis( file class ) : says if file could be class      3
+  if accepts && and ||                                      2
+  [] in aliases works like AmigaDOS                         2
+  macros inside keymaps                                     2
+  dynamic stack checking                                    2
+  get the value of a var into the prompt for editing        1
+  _kickstart for kick version                               1
+  startup option for no default aliases                     1
+  run multiple commands; 'run "ECHO hi;ECHO ho' (subshell?) 3
+  foreach i ( a b c ) do  ---> { } blocks                   2
+    echo $i                                                 2
+  end                                                       2
+  'printf' like command                                     1
+  aliases defined in special batch files                    1
+  dir *: for dir of all devices                             3
+  'fltdetab', 'fltentab'                                    1
+  restore current directory after quitting                  1
+  'seek', also linewise                                     2
+  insert an 'empty' cycle in tab file name expansion        1
+  write a log                                               1
+  flag for copy and rm: confirm                             1
+  search shouldn't output binary lines                      2
+  'readlines' number, @picklines                            2
+  aliases to determine file class, do editin                2
+  search -r outputs full paths                              2
+  'options command defaultopts'   --> alias                 1
+  mark current drive in 'info'                              2
+  action -v for verbose --> set _verbose 2                  1
+  reduce CurrentDir()s in do_copy                           1
+  functions made user definable                             2
+  starting on aux should be recognized automatically        2
+  build new types into class.sh                             2
+  'changesuffix' command                                    1
+  @sortnew sorts files by time                              2
+

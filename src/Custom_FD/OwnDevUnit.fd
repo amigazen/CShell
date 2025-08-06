@@ -1,0 +1,17 @@
+* OwnDevUnit.library 
+##base _OwnDevUnitBase
+##bias 30
+##public
+* functions found in version 1 of the library 
+LockDevUnit(device,unit,ownername,notifybit)(a0,d0/a1,d1)
+AttemptDevUnit(device,unit,ownername,notifybit)(a0,d0/a1,d1)
+FreeDevUnit(device,unit)(a0,d0)
+NameDevUnit(device,unit,ownername)(a0,d0/a1)
+AvailDevUnit(device,unit)(a0,d0)
+* functions added in version 2 of the library 
+##private
+RexxQuery(rexxmsg)(a0)
+##public
+* functions added in version 3 of the library
+OwnerDevUnit(device,unit)(a0,d0)
+##end

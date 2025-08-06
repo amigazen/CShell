@@ -1,0 +1,209 @@
+Changes from 5.19 to 5.20:
+--------------------------
+
+ - ARP-Getenv/Setenv replaced by OS-2.0-GetVar/SetEnv (flags: global & binary)
+ - OS 2.0 Includes in shell.h
+ - replaced ARP filerequester by ASL filerequester
+ - replaced ARP-TackOn by OS-2.0-AddPart:
+     a) ignored return value
+     b) two times the maximum string length was unknown, used 256L (dummy)
+     c) added internal alias "addpart" for command "tackon"
+ - replaced ARP-BaseName by OS-2.0-FilePart
+ - replaced ARP-Assign by OS-2.0-AssignLock (changed assign-code a little bit)
+ - added builtin "chmod" (copied from protect)
+ - now using SetFileDate() from dos.library instead of file_date()
+ - file_date() removed
+ - "touch" now creates a file if not existing (like Unix "touch")
+ - "touch" rewritten to use SetFileDate() and Open()
+ - replaced ARP-PathName by OS-2.0-NameFromLock
+ - replaced ARP-FindCLI(0) by OS-2.0-MaxCli()
+ - replaced ARP-FindCLI(num) by OS-2.0-FindCliProc(num)
+ - replaced ARP-CompareLock by OS-2.0-SameLock
+ - replaced ARP-StamptoStr/StrtoStamp by OS-2.0-DateToStr/StrToDate
+    (reversed return-code)
+ - new option "-p" (make path) for builtin "mkdir", fixed "minargs" (execom.c)
+ - replaced ARP-Strcmp by ANSI-C library stricmp()
+ - replaced ARP-Strncmp by ANSI-C library strnicmp()
+ - found bug in builtin "dir":
+    filenames/directories with >24 chars destroy layout
+ - replaced ARP-Atol by ANSI-C library atol(),
+    using new isnum() instead of IoErr()
+ - replaced ARP's BtoCStr() and CtoBStr() with own routines
+ - replaced ARP's GetDADevs() by OS-2.0-LockDosList()
+    (juhu, nie wieder NULL: ;-)
+ - removed memory leak in drive_name()   (static buffer was too small)
+ - removed bug in oneinfo() with ':' in drive names
+ - rewritten "do_relabel" so that OS-2.0-Relabel() is used,
+    added support for error condition
+ - if ErrorCode<500 then using OS-2.0-Fault() instead of internal error table
+ - new option "-p" for info (print only drives if disk is present)
+ - new mode "6" for oneinfo(), print nothing if disk is not present
+ - added verbose flag "-v" to "mv/rename"  (print renamed/moved files),
+    handle difference between "moving" (file,dir) und "renaming" (file,file)
+ - added force flag "-f" to "mv/rename"  (don't abort on errors)
+ - builtin "info" recognizes Kickstart disks, unreadable disks,
+    NDOS disks etc.
+ - under SAS/C 5.x you must set option "-cm" (multi-char const)
+ - changed internal "itok()"  -->  new "info" layout
+    (because of the new HD floppy disk drives -- they have 1760 kB, not 2 MB!)
+ - changed options of internal "assign" (more AmigaShell compatible)
+    a : add path             (CLI: assign ADD)
+    d : late-binding assign  (CLI: assign DEFER)
+    p : path assign          (CLI: assign PATH)
+ - added correct DoPkt() pragma to shell.h
+ - added flag "f" (force) to "rm" (= "p" (un-protect)), like Unix!
+ - changed "getwindow()" to use DoPkt()
+ - changed "do_addbuffers()" to use OS-2.0-AddBuffers()
+ - changed "changedisk()" to use DoPkt()
+ - changed "setrawcon()" to use DoPkt()
+ - finally, eliminated ARP-SendPacket() :-)
+ - fixed nasty bug in assign which caused heavy system crashes
+    under AmigaOS 3.x
+
+ - Angenommen "minarg" eines builtin command ist 1.  Dieses Kommando hat
+   aber auch eine Option.  Ruft man das Kommando ohne was auf, kommt die
+   gewohnte Fehlermeldung (template).  Gibt man die Option an, denkt die
+   csh, dies waere bereits ein gueltiges Argument...  keine Fehlermeldung,
+   obwohl minargs >= 1 gar nicht erfuellt ist (Optionen zaehlen schliess-
+   lich nicht als Argumente)
+
+to do:
+ - "setrawcon()" should use DOS SetMode() instead of Packets etc.
+
+
+Additional Changes in 5.20:
+---------------------------
+ - fixed bug (Enforcer hit) in "cd" (w/o arguments)
+ - renamed "datecmp()" to "datecmp_csh()"
+    (conflict with <time.h>)
+ - renamed "CreatePort()" (ARP) to "CreatePort_ARP()"
+    (conflict with <clib/alib_protos.h>)
+ - renamed "DeletePort()" (ARP) to "DeletePort_ARP()"
+    (conflict with <clib/alib_protos.h>)
+ - "chkabort()" replaced by "__chkabort()"
+ - some minor changes in "shell.h"
+ - removed "findpart" (which was an internal alias to basename)
+    to avoid (very confusing) conflict with "find" (from SKsh)
+
+
+
+More Changes (beta versions 5.20-5.25)
+--------------------------------------
+ - removed CLI options -r, -i0  (obsolete)
+ - removed ARP residents, now CSH uses dos.library's residents
+ - replaced DosAllocMem()/DosFreeMem() from ARP with own routines
+ - changed handling of DISABLED internals (see AmigaMail II-65)
+ - added Forbid()/Permit() to "path"
+ - added option -s (stack) to "ps"
+ - removed bug in array-size (was too small) for localized date strings
+ - removed bug "object already in use" for renaming a directory to itself
+ - new option -s (short) for "stack"
+ - internal command "aset" gone with ARP :-)
+ - new setting "%L" for internal command "dir"
+ - CSH now detects if other programs change current directory
+ - new setting "%V" (volume) for prompt/titlebar
+ - "!pattern" is now expanded to "!(pattern)"
+    (for compatibility with old ARP-patterns)
+ - CTRL-D from prompt even works if user has aliased "dir" to something else
+ - if pattern is not expandable the complete command line is aborted
+ - fixed nasty memory bug with path comparison in do_dir()
+
+Csh 5.26
+--------
+ - new "edit function" for keymaps: 17, clear screen and refresh current line
+    (e.g. "keymap 0 12=17" assigns that function to CTRL+L like in Unix tcsh)
+ - fixed serious pattern matching bug
+    (string was modified so that other functions like "search" failed)
+ - new function "@stricmp" (case-insensitive @strcmp ;-)
+ - new option "-g" (global) for path: add path(es) to all CLI processes,
+    or (with option "-r") clear path of all CLI processes
+
+Csh 5.27
+--------
+ - fixed minor bug in "info"  (sometimes output of devices w/o fs)
+    and other commands (with similar code for fs-detection)
+ - rewritten "info", added Busy-detection (eg, when formatting a disk)
+ - new variable "_clipri" sets priority while editing command line
+ - print break message ("^C") only once
+    [Gary Duncan]
+ - easier access to arguments in scripts via $0, $1 etc,
+    total number of args is in $#  ($_passed is still valid)
+    [Gary Duncan]
+ - sorted output for:  info, assign, resident (user-residents only)
+ - new option "-f" for "help" shows functions also
+ - added "MAKELINK" section to manual (csh.doc)
+ - enhanced quoting mechanism for filename completion
+ - new functions @filedate, @filenote and @hextodec
+    [Gary Duncan]
+ - re-enabled old "assign" options -l and -n for compatibility
+
+Csh 5.28
+--------
+ - some changes in "strings" and atoi()-error-handling
+    [Gary Duncan]
+ - new option "-v" (verbose) for rm/delete
+    (there's no output when using wildcards if one has an alias for
+     rm/delete, so this is a klugde to re-enable output :)
+ - YEAH!! FIRST TIME IN HISTORY...  Cshell now calculates
+    "Disk size" and "Percent full" in the right way !!
+    ("info" command and others)
+    [Rodney Hester]
+ - kludge for leading spaces in date-strings (Locale bug)
+ - "menu" code rewritten, now using GadTools menus
+
+Csh 5.29
+--------
+ - removed debug output from "menu" command
+ - the "Disk size" in 5.28 was right but the rounding was wrong
+ - raised limits for max. menus (16) and menu items (32)
+ - local variables are now accessable via "$varname" as well
+    as global variables (this was a bug in previous 5.2x versions),
+    if no internal variable "varname" exists
+ - fixed enforcer hit when using backticks (`<command>`) without
+    a leading command
+    [chess@rbg.informatik.th-darmstadt.de]
+ - new internal variable "_dirformat", now you can specify additional
+    options after "-z" (w/o formatting string)
+ - new option -m for "menu" command installs menus with monospaced
+    font (System Default Font) instead of Intuition Font (may be
+    proportional)... necessary for user-formatted menus
+ - updated manual entry for "info"
+ - fixed some more atoierr-bugs (caused various problems)
+ - fixed overflow bug (32 bit long int) in "info" (and related functions)
+ - new internal alias "grep" for "search"
+    [Rodney Hester]
+
+Csh 5.30
+--------
+ - new variable "_nomatch", set it if you want that Cshell aborts
+    command execution if pattern doesn't match
+    [Kurt Haenen]
+ - command searching is now interruptable (again?)
+    [Kurt Haenen]
+ - internal addbuffers now behaves more like AmigaDOS' addbuffers
+ - fixed two bugs in @confirm(): missing fflush() + Enforcer hit
+    [Manuel Fischer]
+ - new function @ask, very similar to @confirm
+ - made source compilable with 2.0 includes
+ - head/tail/strings/htype now accept input from stdin
+ - set/alias now print control chars with '^' and fixed bug in scrolling
+    [Carsten Heyl]
+ - removed cursor positioning bug when using CTRL-D in the middle
+    of a line
+ - now "rm" (or delete) does not abort if one file cannot be deleted
+    or does not exist, meaning of option "-q" changed (opposite)
+
+Csh 5.31
+--------
+ - fixed small bug (introduced in 5.30) in "dir" with empty directories
+ - internal alias "grep" (for "search") removed
+ - fixed some minor bugs in menu handling code
+ - stack increased to 15000 for for max. menus (31 menus, 63 items each)
+ - _nomatch set by default
+
+Csh 5.32
+--------
+ - removed confusing "No match" output in "dir" command
+ - new "edit function" for keymaps: 29, insert last word of previous line
+    (e.g. "keymap 0 12=29" assigns that function to CTRL+L)
+

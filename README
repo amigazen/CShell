@@ -1,0 +1,77 @@
+
+
+                            C-Shell 5.20+ series
+                           ======================
+
+
+                                     by
+                            Andreas M. Kirchwitz
+
+
+                               UUCP/InterNet:
+                        csh-fan@zikzak.in-berlin.de
+
+
+
+
+
+Welcome to the 5.20+ series of C-Shell (Csh).  Hey, what does "5.20+" mean?
+And who is "Andreas M. Kirchwitz"?  What happened to "Urban D.  Mueller"?
+We don't need no WIMPY Csh 5.x -- we want Csh 6.x!  NOW!!!
+
+                                   STOP!
+
+
+Lemme explain, "5.20+" means "5.20 and up". May I introduce myself?  My name
+is "Andreas M. Kirchwitz" and currently I'm the keeper of the source (KOTS).
+
+What's new?  Csh 5.20+ is totally ARP free and OS 2.0+ only.  Plus bug fixes
+and lots of enhancements.  Since Cshell is now maintained by a new author,
+the version number should be increased to "6.x".  Well, you better don't ask
+why this hasn't been done ;-)  Some day it will... some day...
+
+Special thanks must go to Gary Duncan for bug reports and enhancements
+request (incl. source code).  Thank you, Gary!
+
+I recommend that you read the "HISTORY" file.  No joke -- READ IT!
+First of all, some important points if you upgrade to 5.20+.
+
+ - Csh only runs on AmigaOS 2.0 (or higher).
+
+ - Csh 5.20+ uses dos.library (or pattern.library if installed) for
+   pattern matching. That means, you CANNOT USE ARP-PATTERNS any more.
+   But pattern matching is still only done when there's a "*" or "?".
+
+ - Csh uses DOS resident list.  (ARP is gone :)
+   Internal command "resident" works on DOS resident list.
+
+ - Csh-Scripts MUST end with ".sh".  If you call a Csh-Script you MUST
+   type the name WITHOUT the ".sh" extension.
+
+ - You can start DOS-Scripts from Csh.  (do NOT use "execute"!)
+
+ - "s:login.sh" and "s:cshrc.sh" are obsolete.
+   Use "s:.login" and "s:.cshrc" now.
+
+ - Options of internal "assign" have changed.
+
+ - Internal command "path" works on DOS path list.
+
+ - Default output format of "dir" changed.   (supports links)
+ 
+ - Lots of new commands and variables.
+
+
+You better read the history file for a full list of changes!!
+
+
+Hopefully I forgot nothing ;-) And now...  HAVE FUN with this new Csh.
+If you send bug reports, please be so exact as you can. Include an example
+how to reproduce the bug. Write me the version numbers of your Csh and
+AmigaOS. If you report Enforcer hits please send the complete Enforcer and
+SegTracker output. Otherwise it's of no earthly use.
+
+
+
+	Andreas M. Kirchwitz
+
