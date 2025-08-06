@@ -5,6 +5,17 @@
 
 
 
+Changes from 5.50 to 5.50a   (public release)
+--------------------------
+ - New built-in variable: "_warn". Bit-field that enables/disables the
+    various "warning levels" of Cshell when executing programs.
+    (eg, unreleased signals, priority changes, wrong nesting count for
+    Enable/Disable)
+ - Corrected "demo.sh". Didn't work cause of some changes in previous
+    versions.
+
+
+
 Changes from 5.49 to 5.50   (public release)
 -------------------------
  - Cshell now warns if an executed program changed the priority of the

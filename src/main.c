@@ -24,7 +24,7 @@ static void set_kickversion(void);
 char shellcompiled[]="Compiled: "__DATE__" "__TIME__" with "COMPILER"\n";
 
 #if 1
-char shellname[]    ="Csh "CSH_VER"."CSH_REV" (public release)";
+char shellname[]    ="Csh "CSH_VER"."CSH_REV"a (public release)";
 #else
 char shellname[]    ="Csh "CSH_VER"."CSH_REV" (BETA)";
 #endif
@@ -88,6 +88,7 @@ static char *defset[]={
 /*	v_nomatch,  "1",*/
 	v_prghash,  "csh:csh-prgs",
 	v_complete, "*",
+	v_warn,     "29",
 	NULL,       NULL
 };
 

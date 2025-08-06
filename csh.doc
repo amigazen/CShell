@@ -1,6 +1,6 @@
 
-		INSTRUCTIONS FOR C-SHELL VERSION: 5.50 (July 1996)
-		==================================================
+		INSTRUCTIONS FOR C-SHELL VERSION: 5.50a (August 1996)
+		=====================================================
 
   Contents
   --------
@@ -617,6 +617,8 @@ VIII. SHELL COMMANDS
 	?	Matches a single character.
 	#	Matches the following expression 0 or more times.
 	(ab|cd)	Matches any one of the items seperated by '|'.
+		(sometimes '|' must be escaped with a leading backslash
+		 to avoid confusion with the pipe symbol)
 	~	Negates the following expression.  It matches all strings
 		that do not match the expression (aka ~(foo) matches all
 		strings that are not exactly "foo").
@@ -638,10 +640,12 @@ VIII. SHELL COMMANDS
 	!	synonym for ~, supported for compatibility
 	&	prefixed to patterns, ask confirmation for each file
 	~	the previous current directory (if separated)
-	Note that a pattern must contain a '?' or a '*', otherwise the other
-	special characters are not recognized. Furthermore, you cannot spe-
-	cify a single '?' as a pattern in the first argument to a command,
-	as this will be passed on to the command in order to show its usage.
+
+	Note that a pattern must contain a '?', '*', '[' or ']', otherwise
+	the other special characters are not recognized. Furthermore, you
+	cannot specify a single '?' as a pattern in the first argument to a
+	command, as this will be passed on to the command in order to show
+	its usage.
 
 	If pattern.library is present it LIBS:, it will be used for the
 	matching. (disabled, now Cshell always uses dos.library)
@@ -2405,8 +2409,8 @@ LIST OF VARIABLES:
 ------------------
 
     _abbrev
-	Holds a number which lets you select the various modes of
-	command-abbreviation:
+	Holds a number (bit-field) which lets you select the various modes
+	of command-abbreviation:
 
 	  0   internal commands and commands buffered with "rehash"
 	      can no longer be abbreviated  (same as "unset _abbrev")
@@ -2684,6 +2688,32 @@ LIST OF VARIABLES:
 
     _version
 	Contains the version number of the shell, e.g. 510.
+
+    _warn
+	Holds a number (bit-field) which lets you select the various
+	"warning levels" of Cshell when executing programs. This helps
+	you to detect possible bugs in programs.
+
+	  0   no warnings at all  (same as "unset _warn")
+	  1   warn if program didn't release all signals
+	  2   warn if program changed task priority
+
+	      NOTE: Of course, this is not illegal and sometimes the wanted
+	            result of some programs - eg, ChangeTaskPri, Executive -
+	            but the vast majority of programs _is_ buggy and just
+	            forgot the restore the old task priority before exit.
+	            It's disabled by default so that inexperienced users
+	            don't get confused.)
+
+	  4   warn if program has wrong interrupt disabled nesting count
+	      (number of Enable() calls does not match Disable() calls)
+	  8   warn if program has wrong task disabled nesting count
+	      (number of Permit() calls does not match Forbid() calls)
+	 16   warn if program didn't restore old exeception mask for signals
+
+	Numbers can be added to combine modes.
+	By default, this variable is set to '29' (1+4+8+16).
+
 
 
 X.   FUNCTIONS

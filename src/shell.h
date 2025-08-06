@@ -220,14 +220,14 @@ extern char v_titlebar[], v_prompt[], v_hist[], v_histnum[], v_debug[],
 	v_value[], v_nobreak[], v_bground[], v_pipe[], v_datefmt[], v_ioerr[],
 	v_abbrev[], v_rback[], v_insert[], v_failat[], v_clipri[],
 	v_dirformat[], v_nomatch[], v_prghash[], v_cquote[], v_mappath[],
-	v_timeout[], v_promptdep[], v_complete[];
+	v_timeout[], v_promptdep[], v_complete[], v_warn[];
 
 extern char o_hilite[], o_lolite[], *o_rback, *o_csh_qcd, o_internal;
 extern char o_aux, o_minrows, o_scroll, o_nowindow, o_noraw, o_vt100;
 extern char o_nofastscr, o_nobreak, o_bground, o_resident, o_nomatch;
 extern char o_cquote, o_mappath, *o_complete;
 extern char o_pipe[], o_datefmt, o_abbrev, o_insert, *o_every;
-extern long o_noreq, o_failat, o_timeout, o_promptdep;
+extern long o_noreq, o_failat, o_timeout, o_promptdep, o_warn;
 extern char Buf[], isalph[], confirmed, asked, *classfile;
 
 extern char *MyMem;

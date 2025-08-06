@@ -26,9 +26,9 @@ echo
 # the same as CTRL-A, which is ASCII code 1. This can be used to gene-
 # rate escape sequences.
 
-echo -n ^[[30m^[[41m                    # reverse video, no CR
+echo -n \033\13330m\033\13341m                    # reverse video, no CR
 echo -n @center( " C H O I C E S " 76 ) # centered display
-echo    ^[[0m
+echo    \033\1330m
 echo
 echo "[1] Prime numbers
 echo "[2] 'More' text viewer
@@ -125,7 +125,7 @@ set screen @subfile( file $pos $page )   # store screenful in $screen
 writefile screen
                                            # compute & display percentage
 set perc @rpn( $pos $page + 1 - 100 \* $lines / 100 MIN )
-echo -n ^[[3m^[[30m^[[41m "-- More -- ("$perc"%)"^[[0m ""
+echo -n \033\1333m\033\13330m\033\13341m "-- More -- ("$perc"%) "\033\1330m ""
 
 
 input -r c    # inputs one single keystroke without waiting for CR
@@ -177,12 +177,12 @@ set lab $lab "#########################"
 
 cls
 writefile lab
-echo -n ^j"8=up 2=down 4=left 6=right "^j^[[2A
+echo -n ^j"8=up 2=down 4=left 6=right "^j\033\1332A
 set x 2
 set y 2
 set wid @strlen( @word( $lab 1 ) )
 set up  @words( $lab )
-echo -n ^[[$up\A^[[B^[[C.^[[D
+echo -n \033\133$up\A\033\133B\033\133C.\033\133D
 alias test "%a%b set xx @rpn( $x $a + );set yy @rpn( $y $b + );\
  set f @strmid( @word( $lab $yy ) $xx 1 )
 
@@ -192,10 +192,10 @@ date -s
 label Loop
 
 input -r c
-if $c = 8;test 0 -1;if -n $f = "#";echo -n " "^H^[[A.^H;dec y;endif;endif
-if $c = 2;test 0  1;if -n $f = "#";echo -n " "^H^[[B.^H;inc y;endif;endif
-if $c = 6;test  1 0;if -n $f = "#";echo -n " "^H^[[C.^H;inc x;endif;endif
-if $c = 4;test -1 0;if -n $f = "#";echo -n " "^H^[[D.^H;dec x;endif;endif
+if $c = 8;test 0 -1;if -n $f = "#";echo -n " "^H\033\133A.^H;dec y;endif;endif
+if $c = 2;test 0  1;if -n $f = "#";echo -n " "^H\033\133B.^H;inc y;endif;endif
+if $c = 6;test  1 0;if -n $f = "#";echo -n " "^H\033\133C.^H;inc x;endif;endif
+if $c = 4;test -1 0;if -n $f = "#";echo -n " "^H\033\133D.^H;dec x;endif;endif
 if $x >= $wid;cls;echo Congrats, escaped in `date -r` seconds.;return 0;endif
 goto Loop
 

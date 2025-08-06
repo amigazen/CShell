@@ -47,6 +47,7 @@ char v_abbrev	[]="_abbrev";	/* disable command abbreviations	*/
 char v_rback	[]="_rback";	/* command to be used for '&'		*/
 char v_insert	[]="_insert";	/* insert mode				*/
 char v_failat	[]="_failat";	/* batch file fail level		*/
+char v_warn	[]="_warn";	/* execute warn level			*/
 char v_clipri	[]="_clipri";	/* command line priority		*/
 char v_dirformat[]="_dirformat";/* format string for "dir" command	*/
 char v_nomatch	[]="_nomatch";	/* abort if pattern doesn't match	*/

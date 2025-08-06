@@ -16,6 +16,7 @@
 
 int MySyncRun( char *com, char *args, BPTR in, BPTR out, int nosync );
 int echofunc(void);
+extern struct ExecBase *SysBase;
 
 int
 do_run( char *str, int nosync )
@@ -779,8 +780,8 @@ MySyncRun( char *com, char *args, BPTR in, BPTR out, int nosync )
 
 	if (seglist_cmd) {				/* rslt = 0 */
 		struct Task *mytask;
-		ULONG old_sigalloc;
-		BYTE old_pri;
+		ULONG old_sigalloc, old_sigexcept;
+		BYTE old_pri,old_idnestcnt,old_tdnestcnt;
 
 		/*
 		 *  This is inspired by Gary Duncan who was inspired by Wshell ;-)
@@ -789,9 +790,12 @@ MySyncRun( char *com, char *args, BPTR in, BPTR out, int nosync )
 		 *  the task priority.
 		 */
 
-		mytask       = (struct Task *)Myprocess;	/* just for readability.. */
-		old_sigalloc = mytask->tc_SigAlloc;		/* hold values before command execution */
-		old_pri      = mytask->tc_Node.ln_Pri;		/* hold values before command execution */
+		mytask        = (struct Task *)Myprocess;	/* just for readability.. */
+		old_sigalloc  = mytask->tc_SigAlloc;		/* sigs allocated */
+		old_pri       = mytask->tc_Node.ln_Pri;		/* priority */
+		old_idnestcnt = SysBase->IDNestCnt;		/* intr disabled nesting */
+		old_tdnestcnt = SysBase->TDNestCnt;		/* task disabled nesting */
+		old_sigexcept = mytask->tc_SigExcept;		/* sigs we will take excepts for */
 
 		SetIoErr(0);
 
@@ -819,13 +823,25 @@ MySyncRun( char *com, char *args, BPTR in, BPTR out, int nosync )
 		/*
 		 *  now see if naughty command messed things up ...
 		 */
-		if (old_sigalloc != mytask->tc_SigAlloc) {
+		if ((old_sigalloc != mytask->tc_SigAlloc) && (o_warn&1)) {
 			fprintf(stderr, "Warning! Unreleased signal(s); (%08X)\n",
 			        old_sigalloc ^ mytask->tc_SigAlloc);
 		}
-		if (old_pri != mytask->tc_Node.ln_Pri) {
-			fprintf(stderr, "Warning! CLI priority changed from %d to %d\n",
+		if ((old_pri != mytask->tc_Node.ln_Pri) && (o_warn&2)) {
+			fprintf(stderr, "Warning! CLI priority changed from %d to %d.\n",
 			        old_pri, mytask->tc_Node.ln_Pri);
+		}
+		if ((old_idnestcnt != SysBase->IDNestCnt) && (o_warn&4)) {	/* Disable/Enable */
+			fprintf(stderr, "Warning! Interrupt disabled nesting count changed from %d to %d.\n",
+			        old_idnestcnt, SysBase->IDNestCnt);
+		}
+		if ((old_tdnestcnt != SysBase->TDNestCnt) && (o_warn&8)) {	/* Forbid/Permit */
+			fprintf(stderr, "Warning! Task disabled nesting count changed from %d to %d.\n",
+			        old_tdnestcnt, SysBase->TDNestCnt);
+		}
+		if ((old_sigexcept != mytask->tc_SigExcept) && (o_warn&16)) {
+			fprintf(stderr, "Warning! Exception(s) changed; (%08X)\n",
+			        old_sigexcept ^ mytask->tc_SigExcept);
 		}
 	}
 

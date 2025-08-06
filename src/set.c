@@ -434,7 +434,7 @@ char o_hilite[24], o_lolite[8], *o_csh_qcd, o_nobreak;
 char o_minrows, o_scroll, o_nowindow, o_noraw, o_vt100, o_nofastscr;
 char o_bground, o_resident, o_pipe[16]="T:", o_datefmt, o_nomatch=0;
 char o_abbrev=5, o_insert=1, *o_every, o_cquote=0, o_mappath=0;
-long o_noreq, o_failat=20, o_timeout=GWB_TIMEOUT_LOCAL;
+long o_noreq, o_failat=20, o_timeout=GWB_TIMEOUT_LOCAL, o_warn=29;
 long o_promptdep=MAX_PITEM;
 
 extern char trueprompt[100];
@@ -460,9 +460,10 @@ set_sys_var( char *name, char *val )
 	else if(ISVAR(v_cquote   )) o_cquote  = val!=NULL;
 	else if(ISVAR(v_every    )) o_every   = val;
 	else if(ISVAR(v_failat   )) o_failat  = val ? atoi(val) : 20;
+	else if(ISVAR(v_warn     )) o_warn    = val ? atoi(val) : 29;
 	else if(ISVAR(v_timeout  )) o_timeout = val ? atoi(val) : 1;
 	else if(ISVAR(v_rback    )) o_rback   = val ? val : "rback";
-	else if(ISVAR(v_abbrev   )) o_abbrev  = val ? atoi(val) : 0;
+	else if(ISVAR(v_abbrev   )) o_abbrev  = val ? atoi(val) : 5;
 	else if(ISVAR(v_promptdep)) o_promptdep = val ? atoi(val) : -1;
 	else if(ISVAR(v_complete )) o_complete= val ? val : "*";
 #if 0
