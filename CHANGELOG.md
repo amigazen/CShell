@@ -5,6 +5,19 @@ All notable changes to CShell will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.60] - Public Release
+
+### Added
+- $STACK: cookie for NDK3.2
+- Revised version number to 5.60
+- Added ObjArc contribution
+
+### Fixed
+- Build failure caused by missing changes in 5.50a (see the next item)
+- Revised smakefile to utilise SAS/C 6.58 features
+- Changed location of .cshrc to SDK:S/ for ToolKit compatibility
+- Revised vers command output
+
 ## [5.50a] - Public Release
 
 ### Added

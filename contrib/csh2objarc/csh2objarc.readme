@@ -1,0 +1,68 @@
+Short: set of aliases for CSh and ObjArc that lets cd to archives
+Author: Robert Wal <reptile@lodz.pdi.net>
+Uploader: Robert Wal <reptile@lodz.pdi.net>
+Requires: csh521 or higher, ObjectArchive package, OS 2.0+
+Type: util/shell
+
+This is a set of scripts for csh that lets you use ObjectArchive package,
+without even knowing about it ;-)
+All you have to do is to add the file .cshrc to your own .cshrc and
+class.sh to your own class.sh and you can do things like this:
+
+  Ivonne:Archives/AmiNet/comm/tcp
+   0> cd IU-14-amitcp.tar.gz    
+  
+  IU-14-amitcp:
+   0> INetUtils-1.4-AmiTCP/
+  
+  IU-14-amitcp:INetUtils-1.4-AmiTCP
+   0> contrib/
+  
+  IU-14-amitcp:INetUtils-1.4-AmiTCP/contrib
+   0> la
+  Directory of IU-14-amitcp:INetUtils-1.4-AmiTCP/contrib
+    ------rwed ---- ----     0     0    814 30-Sep-94 - active2next.rexx
+    ------rwed ---- ----     0     0  73227 09-Dec-94 - AmiPOP115.lha
+    ------rwed ---- ----     0     0   2294 30-Sep-94 - mailq.rexx
+    ------rwed ---- ----     0     0  28655 26-May-94 - Sabot18.lha
+    ------rwed ---- ----     0     0   3518 04-Oct-94 - stuff.rexx
+    ------rwed ---- ----     0     0   6766 13-Oct-94 - waffle_spool.rexx
+   234 Blocks, 115,274 Bytes used in 6 files
+  
+  IU-14-amitcp:INetUtils-1.4-AmiTCP/contrib
+   0> AmiPOP115.lha 
+  
+  AmiPOP115:
+   0> AmiPOP115/
+  
+  AmiPOP115:AmiPOP115
+   0> la
+  Directory of AmiPOP115:AmiPOP115
+    d-----rwed ---- ----     0     0  <Dir> Today     - source/
+   +------rwed ---- ----     0     0  16844 08-Dec-94 - AmiPOP-AmiTCP.000
+    ------rwed ---- ----     0     0    653 28-Feb-94 - AmiPOP-AmiTCP.000.info
+   +------rwed ---- ----     0     0  16264 08-Dec-94 - AmiPOP-AmiTCP.030
+    ------rwed ---- ----     0     0    653 28-Feb-94 - AmiPOP-AmiTCP.030.info
+   +------rwed ---- ----     0     0  16884 08-Dec-94 - AmiPOP.000
+    ------rwed ---- ----     0     0    653 28-Feb-94 - AmiPOP.000.info
+   +------rwed ---- ----     0     0  16304 08-Dec-94 - AmiPOP.030
+    ------rwed ---- ----     0     0    653 28-Feb-94 - AmiPOP.030.info
+   +------rwed ---- ----     0     0  24852 08-Dec-94 - AmiPOP.guide
+    ------rwed ---- ----     0     0   5206 28-Feb-94 - AmiPOP.guide.info
+   209 Blocks, 98,966 Bytes used in 11 files
+  
+  AmiPOP115:AmiPOP115
+   0> st
+  IU-14-amitcp:INetUtils-1.4-AmiTCP/contrib
+  Ivonne:Archives/AmiNet/comm/tcp
+  
+  AmiPOP115:AmiPOP115
+   0> b
+  
+  IU-14-amitcp:INetUtils-1.4-AmiTCP/contrib
+   0> b
+  
+  Ivonne:Archives/AmiNet/comm/tcp
+   0>
+  
+simple huh?

@@ -1,0 +1,1 @@
+# Example .cshrc file for CShell

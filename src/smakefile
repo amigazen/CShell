@@ -3,8 +3,8 @@
 #�NOTE: char's are UNSIGNED by default, and the executable's called 'csh'
 
 #CFLAGS	= OPTTIME NOSTKCHK NODEBUG    STRMERGE PARMS=REG UNSCHAR MCCONS
-CFLAGS	= INCDIR=include: STKCHK STKEXT STRICT STRCONS NODEBUG STRMERGE PARMS=REG UNSCHAR MCCONS UTILLIB
-LFLAGS	= NOICONS STRIPDBG
+CFLAGS	= INCDIR=include: STKCHK STKEXT ANSI STRCONS NODEBUG STRMERGE PARMS=REG UNSCHAR MCCONS UTILLIB
+LFLAGS	= NOICONS STRIPDEBUG
 OPTIM	= OPTIMIZE OPTTIME
 GSTFILE	= cshell.gst
 DEST	= csh
@@ -31,7 +31,7 @@ csh: $(OBJS)
 
 $(GSTFILE): shell.h proto.h
 	@-avail flush
-	$(CC) UNSCHAR NOOBJNAME MAKEGST=$(GSTFILE) syms.c
+	$(CC) UNSCHAR NOICONS NOOBJNAME MAKEGST=$(GSTFILE) syms.c
 
 comm1.o: comm1.c $(GSTFILE)
 	$(CC) $(CFLAGS) $(OPTIM) GST=$(GSTFILE) comm1.c
@@ -65,6 +65,7 @@ clean:
 	@-delete $(GSTFILE) $(GSTFILE).info $(OBJS) $(DEST) $(DEST).ld quiet >nil:
 	@-avail flush >nil:
 
+#TODO: this section needs updating one day
 rel:
 	@echo "Making release version ..."
 	@-delete csh.lha cshsrc.lha quiet >nil:

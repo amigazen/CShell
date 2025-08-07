@@ -24,11 +24,7 @@ static void exectimer(int stop);
 static void set_kickversion(void);
 char shellcompiled[]="Compiled: "__DATE__" "__TIME__" with "COMPILER"\n";
 
-#if 1
-char shellname[]    ="Csh "CSH_VER"."CSH_REV"a (public release)";
-#else
-char shellname[]    ="Csh "CSH_VER"."CSH_REV" (BETA)";
-#endif
+char shellname[]    ="CShell "CSH_VER"."CSH_REV"";
 
 char shellversion[] =CSH_VER""CSH_REV;
 char shellvers[]    =CSH_VER"."CSH_REV;
@@ -40,13 +36,13 @@ char shellthere[]   ="CshLoggedIn";
 char *oldtitle = NULL;
 char trueprompt[100];
 char Inline[260];
-extern struct ExecBase *SysBase;	/* standard fare....*/
-extern struct DosLibrary *DOSBase;	/* more standard fare.... */
-struct IntuitionBase *IntuitionBase;
-struct GfxBase *GfxBase;
-struct Library *GadToolsBase;
-struct Library *AslBase;	
-struct Library *BattClockBase;
+extern struct ExecBase *SysBase;	
+extern struct DosLibrary *DOSBase;	
+extern struct IntuitionBase *IntuitionBase;
+extern struct GfxBase *GfxBase;
+extern struct Library *GadToolsBase;
+extern struct Library *AslBase;	
+struct Library *BattClockBase; /* Possible bug in BattClock proto that the Base is not defined - report to NDK3.2 team */
 
 struct Window *old_WindowPtr = NULL;
 int    oldtaskpri = -999;
@@ -87,7 +83,7 @@ static char *defset[]={
 	"_man",     "SDK:doc/csh.doc",
 	"_version", shellversion,
 /*	v_nomatch,  "1",*/
-	v_prghash,  "PROGDIRcsh-prgs",
+	v_prghash,  "PROGDIR:csh-prgs",
 	v_complete, "*",
 	v_warn,     "29",
 	NULL,       NULL
@@ -140,8 +136,8 @@ main(int argc, char *argv[])
 	push_locals( &locals );
 	initmap();
 
-	if (!SysBase || SysBase->LibNode.lib_Version<37) {
-		printf("Sorry, you'll need at least V37 to run CSH.\n");
+	if (!SysBase || SysBase->LibNode.lib_Version<39) {
+		printf("Sorry, you'll need at least OS 3.0 to run CSH.\n");
 		exit(20);
 	}
 
@@ -299,13 +295,13 @@ main(int argc, char *argv[])
 
 	if (login && !nologin) {
 		/*printf("we're the first csh today, mon ami!\n");*/
-		if( exists("S:.login"))
-			execute("source S:.login");
+		if( exists("SDK:S/.login"))
+			execute("source SDK:S/.login");
 	}
 
 	if (!nocshrc) {
-		if( exists("S:.cshrc"))
-			execute("source S:.cshrc");
+		if( exists("SDK:S/.cshrc"))
+			execute("source SDK:S/.cshrc");
 	}
 
 	{
@@ -428,7 +424,7 @@ main(int argc, char *argv[])
 		if (breakcheck())
 			while (WaitForChar(Input(), 100L) || CHARSWAIT( stdin ))
 				gets(Inline);
-		clearerr(stdin);  /* prevent acidental quit */
+		clearerr(stdin);  /* prevent accidental quit */
 		/*
 		   AMK: new position of breakreset() before exec_every(),
 		        old position caused enforcer hits
@@ -558,7 +554,7 @@ main_exit(n)
 	if (muBase) CloseLibrary((struct Library *)muBase); muBase=NULL;
 #endif
 
-	if (PatternBase) CloseLibrary( PatternBase );
+/*	if (PatternBase) CloseLibrary( PatternBase );*/
 	CloseLibrary((struct Library *)GadToolsBase);
 	CloseLibrary((struct Library *)AslBase);
 	CloseLibrary((struct Library *)IntuitionBase);

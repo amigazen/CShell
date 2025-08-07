@@ -109,7 +109,7 @@
  # ifndef memmove
  # define memmove(t,f,l) movmem((f),(t),(l))
  # endif
- # define COMPILER "SAS/C 6"
+ # define COMPILER "SAS/C 6.58"
  # define swapmem(x,y,z) swmem(x,y,z)
  # pragma libcall PatternBase AllocPattern 48 0802
  # pragma libcall PatternBase MatchThePattern 60 8002

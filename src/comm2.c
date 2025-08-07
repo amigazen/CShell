@@ -370,7 +370,8 @@ do_version( void )
 			 "3.00 ARP (A) versions by Carlo Borreo, Cesare Dieni\n"
 			 "4.00 ARP 1.3 versions by Carlo Borreo, Cesare Dieni\n"
 			 "5.00 Lattice versions by U. Dominik Mueller\n"
-			 "5.20+ OS 2.0 versions by Andreas M. Kirchwitz\n");
+			 "5.20 OS 2.0 versions by Andreas M. Kirchwitz\n"
+			 "5.60+ versions by amigazen project\n");
 		printf( shellcompiled );
 		printf("Currently running: ");
 		fflush(stdout);
