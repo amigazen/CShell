@@ -4,10 +4,10 @@
 ## Use AmigaGuide to view this document.
 ##
 
-@node main "C-Shell documentation"
+@node main "CShell documentation"
 @width 77
 
-  C-SHELL 5.20+ REFERENCE,  Copyright 1991-1993 by the authors.
+  CShell 5.20+ REFERENCE,  Copyright 1991-1993 by the authors.
 
   @{"   Commands    " link Commands  }
   @{"   Variables   " link Variables }

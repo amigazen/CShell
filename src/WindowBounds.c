@@ -7,9 +7,8 @@
 #include <exec/types.h>
 #include <dos/dos.h>
 #include <dos/dosextens.h>
-#include <clib/dos_protos.h>
-#include <clib/exec_protos.h>
 #include <proto/dos.h>
+#include <proto/exec.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

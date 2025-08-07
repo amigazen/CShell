@@ -1,14 +1,13 @@
 ######################################################################
-# Makefile to build Shell 5.10L under Lattice C 5.10
-# NOTE: char's are UNSIGNED by default, and the executable's called 'zsh'
-# primitive version, even LMK should be able to cope with this
+# Makefile to build Shell 6.00M under SAS/C 6.58
+#ï¿½NOTE: char's are UNSIGNED by default, and the executable's called 'csh'
 
 #CFLAGS	= OPTTIME NOSTKCHK NODEBUG    STRMERGE PARMS=REG UNSCHAR MCCONS
-CFLAGS	=         NOSTKCHK DEBUG=LINE          PARMS=REG UNSCHAR MCCONS UTILLIB
+CFLAGS	= INCDIR=include: NOSTKCHK NODEBUG STRMERGE PARMS=REG UNSCHAR MCCONS UTILLIB
 LFLAGS	= NOICONS
 #OPTIM	= OPTIMIZE OPTTIME
 GSTFILE	= cshell.gst
-DEST	= zsh
+DEST	= csh
 SRCS	= run.c main.c comm1.c comm2.c comm3.c execom.c set.c sub.c globals.c rawcon.c syms.c hypdoc.c WindowBounds.c
 HDRS	= proto.h shell.h WindowBounds.h
 OBJS	= run.o main.o comm1.o comm2.o comm3.o execom.o set.o sub.o globals.o rawcon.o WindowBounds.o
@@ -16,7 +15,7 @@ CC	= sc
 
 # OPTSIZE   = short code optimize      NOSTKCHK  = no stack overflow check
 # NODEBUG   = no debug info            UNSCHAR   = unsigned chars by default
-# STRMERGE  = one copy per string      CPU=68030 = code for 68030
+# STRMERGE  = one copy per string      CPU=68000 = code for 68000
 # GST=...   = read precompiled header  NOOBJNAME MAKEGST=... = write precompiled header
 # PARMS=REG = register arguments       ND        = strip debug information
 
@@ -25,7 +24,7 @@ CC	= sc
 
 zsh: $(OBJS)
 	slink FROM lib:cres.o $(OBJS) LIB LIB:scm.lib LIB:sc.lib LIB:debug.lib\
-		LIB:amiga.lib WITH LIB:utillib.with TO $(DEST).ld $(LFLAGS)
+		LIB:small.lib WITH LIB:utillib.with TO $(DEST).ld $(LFLAGS)
 	slink FROM $(DEST).ld TO $(DEST) $(LFLAGS) NODEBUG
 	@protect $(DEST)    add p quiet
 	@protect $(DEST).ld add p quiet
@@ -58,20 +57,13 @@ WindowBounds.o: WindowBounds.c $(GSTFILE)
 	$(CC) $(CFLAGS) $(OPTIM) GST=$(GSTFILE) WindowBounds.c
 
 install:
-	@echo "Installing Cshell ..."
-	@copy $(DEST)    csh:csh    clone
-	@copy $(DEST).ld csh:csh.ld clone
+	@echo "Installing CShell ..."
+	@copy $(DEST)    /SDK/C/csh    clone
 
 clean:
 	@echo "Cleaning up working directory ..."
-	@-delete $(GSTFILE) $(OBJS) $(DEST) $(DEST).ld quiet >nil:
+	@-delete $(GSTFILE) $(GSTFILE).info $(OBJS) $(DEST) $(DEST).ld quiet >nil:
 	@-avail flush >nil:
-
-beta:
-	@echo "Making beta version ..."
-	@-delete cshbeta.lha cshsrc.lha quiet >nil:
-	lha -a a cshbeta.lha csh:csh csh:csh.doc csh:History csh:Readme
-	lha -a a cshsrc.lha $(SRCS) $(HDRS) smakefile
 
 rel:
 	@echo "Making release version ..."

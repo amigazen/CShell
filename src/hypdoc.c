@@ -4,9 +4,9 @@
 #include <exec/types.h>
 
 
-#define ASCII_DOC	"csh:csh.doc"
-#define HYPER_GUIDE	"csh:csh-tutorial.guide"
-#define HYPER_INDEX	"csh:csh-reference.guide"
+#define ASCII_DOC	"SDK:doc/csh.doc"
+#define HYPER_GUIDE	"SDK:Help/csh-tutorial.guide"
+#define HYPER_INDEX	"SDK:Help/csh.guide"
 
 
 char indx[300][20];
