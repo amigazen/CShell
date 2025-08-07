@@ -7,6 +7,7 @@
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
  * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M by amigazen project (Fri, 08 Aug 2025)
  *
  */
 

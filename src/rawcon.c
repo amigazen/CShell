@@ -9,6 +9,7 @@
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
  * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M by amigazen project 2025-08-07
  *
  */
 
@@ -1129,7 +1130,7 @@ newwidth( void )
 			get_WindowBounds_Output(&w_width,&w_height,o_timeout);
 		}
 	}
-	/* kprintf("newwidth:  %ld × %ld  (timeout %ld)\n",w_width,w_height,o_timeout); */
+	/* kprintf("newwidth:  %ld ï¿½ %ld  (timeout %ld)\n",w_width,w_height,o_timeout); */
 	if( w_width<1 ) w_width=1;	/* crash after resizing was reported */
 	return w_width;
 }

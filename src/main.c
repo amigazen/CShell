@@ -8,6 +8,7 @@
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by U. Dominik Mueller 17-Feb-91
  * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M by amigazen project (Fri, 08 Aug 2025)
  *
  */
 
@@ -15,7 +16,7 @@
 
 
 #define CSH_VER "5"
-#define CSH_REV "50"
+#define CSH_REV "60"
 
 
 static struct Window *getwindow(void);
@@ -44,7 +45,7 @@ extern struct DosLibrary *DOSBase;	/* more standard fare.... */
 struct IntuitionBase *IntuitionBase;
 struct GfxBase *GfxBase;
 struct Library *GadToolsBase;
-struct Library *AslBase;		/* AMK: Asl-FileRequester replaces ARP */
+struct Library *AslBase;	
 struct Library *BattClockBase;
 
 struct Window *old_WindowPtr = NULL;
@@ -73,20 +74,20 @@ static char *defset[]={
 	v_hist,     "50",
 	v_lasterr,  "0",
 	v_stat,     "0",
-	v_path,     "RAM:,RAM:c,df0:c,df1:c,sys:system,csh:,s:",
+	v_path,     "RAM:,SYS:System,SDK:C,S:,C:",
 	v_rxpath,   "REXX:",
 	v_scroll,   "2",
 	v_minrows,  "34",
 	v_hilite,   "c7",
 	v_lcd,      "",
-	v_qcd,      "csh:csh-qcd",
+	v_qcd,      "PROGDIR:csh-qcd",
 	v_insert,   "1",
 	v_abbrev,   "5",
 	"_terminal","",
-	"_man",     "csh:csh.doc",
+	"_man",     "SDK:doc/csh.doc",
 	"_version", shellversion,
 /*	v_nomatch,  "1",*/
-	v_prghash,  "csh:csh-prgs",
+	v_prghash,  "PROGDIRcsh-prgs",
 	v_complete, "*",
 	v_warn,     "29",
 	NULL,       NULL
@@ -109,6 +110,7 @@ long ExecTimer, ExecRC;
 #ifdef __SASC
 long __stack = 17500L;
 #endif
+static const char *stack_cookie = "$STACK: 17500";
 
 main(int argc, char *argv[])
 {

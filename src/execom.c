@@ -6,6 +6,7 @@
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
  * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M by amigazen project 2025-08-07
  *
  */
 
@@ -1176,22 +1177,22 @@ nextcommand:
 			avline=compile_avf(frameptr,av,(pend_alias?1:0), ac, delim,ccno==1);
 
 #if 0
-		fprintf(stderr,"av[012]: %s %s %s, avline: %s\n",av[0]?av[0]:"×",av[1]?av[1]:"×",av[2]?av[2]:"×",avline?avline:"(NULL)");
+		fprintf(stderr,"av[012]: %s %s %s, avline: %s\n",av[0]?av[0]:"ï¿½",av[1]?av[1]:"ï¿½",av[2]?av[2]:"ï¿½",avline?avline:"(NULL)");
 		{
 		char *p = find_internal(av[0]);
 		int cmdnum = find_command(av[0]);
 		printf("find_command(av[0]) : %d (%s)\n",cmdnum,p?p:"(NULL)");
 		if (Command[cmdnum].func == do_truerun)
-			printf("Achtung, do_truerun() wird ausgeführt!\n");
+			printf("Achtung, do_truerun() wird ausgefï¿½hrt!\n");
 /*
 		if (stricmp(av[0],"run") == 0)
-			printf("Achtung, C:RUN wird ausgeführt!\n");
+			printf("Achtung, C:RUN wird ausgefï¿½hrt!\n");
 */
 		}
 #endif
 		if ((findcmd_ret = find_command(av[0])) != 0) {
 			if (Command[findcmd_ret].func == do_truerun) {
-				/*printf("Achtung, do_truerun() wird ausgeführt!\n");*/
+				/*printf("Achtung, do_truerun() wird ausgefï¿½hrt!\n");*/
 				noclose_redir = TRUE;
 			}
 		}

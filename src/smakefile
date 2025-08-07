@@ -3,9 +3,9 @@
 #�NOTE: char's are UNSIGNED by default, and the executable's called 'csh'
 
 #CFLAGS	= OPTTIME NOSTKCHK NODEBUG    STRMERGE PARMS=REG UNSCHAR MCCONS
-CFLAGS	= INCDIR=include: NOSTKCHK NODEBUG STRMERGE PARMS=REG UNSCHAR MCCONS UTILLIB
-LFLAGS	= NOICONS
-#OPTIM	= OPTIMIZE OPTTIME
+CFLAGS	= INCDIR=include: STKCHK STKEXT STRICT STRCONS NODEBUG STRMERGE PARMS=REG UNSCHAR MCCONS UTILLIB
+LFLAGS	= NOICONS STRIPDBG
+OPTIM	= OPTIMIZE OPTTIME
 GSTFILE	= cshell.gst
 DEST	= csh
 SRCS	= run.c main.c comm1.c comm2.c comm3.c execom.c set.c sub.c globals.c rawcon.c syms.c hypdoc.c WindowBounds.c
@@ -22,7 +22,7 @@ CC	= sc
 # added [AMK]:
 # MCCONS    = allow multi-char const   OPTTIME   = optimize time
 
-zsh: $(OBJS)
+csh: $(OBJS)
 	slink FROM lib:cres.o $(OBJS) LIB LIB:scm.lib LIB:sc.lib LIB:debug.lib\
 		LIB:small.lib WITH LIB:utillib.with TO $(DEST).ld $(LFLAGS)
 	slink FROM $(DEST).ld TO $(DEST) $(LFLAGS) NODEBUG

@@ -7,6 +7,7 @@
  * Version 2.07M by Steve Drew 10-Sep-87
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
+ * Version 5.60M by amigazen project 2025-08-07
  *
  */
 
@@ -316,7 +317,7 @@ dnext( DPTR *dp, char **pname, int *stat)
 				char *add = strchr(dp->dname,':')+1;
 				if (NameFromLock(dp->dvp->dvp_Lock,buf,255)) {
 					AddPart(buf,add,255);
-					printf("«%s»\n",buf);
+					printf("ï¿½%sï¿½\n",buf);
 
 					if (new_lock=Lock(buf,ACCESS_READ)) {
 						if (Examine(new_lock,dp->fib)) {
