@@ -5,6 +5,31 @@ All notable changes to CShell will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.80] - Public Release
+
+### Added
+- Added custom snprintf() function built around VSNPrintF() from utility.library
+- Added recognition of Long Name FFS to the info command
+- Refactored GetProgramDir() support and added getprogdir builtin
+- Updated documentation to reflect new getprogdir builtin
+- Added help text output for -?/-h command line option
+
+### Fixed
+- Refactored most sprintf functions to use new snprintf buffer overrun safe version
+- Changed location of hardcoded config file paths to ToolKit standard
+- Adjusted stack cookie to 20000 as suggested in original code comments
+- Updated smakefile to properly build the debug build
+- Fixed AmigaGuide syntax errors in csh.guide
+
+## [5.70] - Public Release
+
+### Added
+- Added remaining example csh scripts from Aminet
+
+### Fixed
+- Replaced all string functions with length safe versions
+- Changed location of .sh scripts to match ToolKit standard
+
 ## [5.60] - Public Release
 
 ### Added
@@ -15,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Build failure caused by missing changes in 5.50a (see the next item)
 - Revised smakefile to utilise SAS/C 6.58 features
-- Changed location of .cshrc to SDK:S/ for ToolKit compatibility
+- Changed location of .cshrc to S: for ToolKit compatibility
 - Revised vers command output
 
 ## [5.50a] - Public Release
@@ -29,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [5.50] - Public Release
 
 ### Added
-- Cshell now warns if an executed program changed the priority of the current task or the signal state shows unreleased signals.
+- CShell now warns if an executed program changed the priority of the current task or the signal state shows unreleased signals.
 
 ## [5.49] - Internal Beta Release
 

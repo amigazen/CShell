@@ -7,7 +7,8 @@
  * Version 2.07M by Steve Drew 10-Sep-87
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
- * Version 5.60M by amigazen project 2025-08-07
+ * Version 5.20L and 5.50 by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M+ by amigazen project 2025-08-07
  *
  */
 
@@ -29,7 +30,7 @@ seterr( int err )
 
 	if( LastErr!=err ) {
 		LastErr=err;
-		sprintf(buf, "%d", err);
+		snprintf(buf, sizeof(buf), "%d", err);
 		set_var(LEVEL_SET, v_lasterr, buf);
 
 		if( val=get_var(LEVEL_SET, v_stat))
@@ -91,7 +92,7 @@ add_history( char *str )
 	}
 	hist->prev = NULL;
 	hist->line = salloc (strlen(str) + 1);
-	strcpy (hist->line, str);
+	strncpy (hist->line, str, strlen(str) + 1);
 	++H_len;
 	H_num= H_tail_base+ H_len;
 }
@@ -156,7 +157,7 @@ replace_head( char *str )
 	if (str && strlen(str) && H_head) {
 		free (H_head->line);
 		H_head->line = salloc (strlen(str)+1);
-		strcpy (H_head->line, str);
+		strncpy (H_head->line, str, strlen(str)+1);
 	}
 }
 
@@ -206,7 +207,7 @@ setioerror( int err )
 	if( IoError<0 ) IoError=0;
 	if( LastIoError!=IoError) {
 		LastIoError=IoError;
-		sprintf(buf, "%d", IoError);
+		snprintf(buf, sizeof(buf), "%d", IoError);
 		set_var(LEVEL_SET, v_ioerr, buf);
 	}
 }
@@ -528,13 +529,14 @@ expand( char *base, int *pac )
 				continue;
 			lock = CurrentDir (dp->lock);
 			search = salloc(strlen(ename)+strlen(name)+strlen(tail)+6);
-			strcpy (search, name);
-			strcat (search, "/");
+			strncpy (search, name, strlen(ename)+strlen(name)+strlen(tail)+5);
+			search[strlen(ename)+strlen(name)+strlen(tail)+5] = '\0';
+			strncat (search, "/", strlen(ename)+strlen(name)+strlen(tail)+5-strlen(search));
 			if (recur) {
-				strcat(search, ".../");
-				strcat(search, ename);
+				strncat(search, ".../", strlen(ename)+strlen(name)+strlen(tail)+5-strlen(search));
+				strncat(search, ename, strlen(ename)+strlen(name)+strlen(tail)+5-strlen(search));
 			}
-			strcat (search, tail);
+			strncat (search, tail, strlen(ename)+strlen(name)+strlen(tail)+5-strlen(search));
 			/*
 			 *  expand() will crash in endless recursion
 			 *  if you do a .../* and a directory name
@@ -565,8 +567,9 @@ expand( char *base, int *pac )
 					eav[eac] = salloc(bl+l+1+sizeof(FILEINFO));
 					memcpy( eav[eac], *scrav-sizeof(FILEINFO),sizeof(FILEINFO));
 					eav[eac]+=sizeof(FILEINFO);
-					strcpy( eav[eac], bname);
-					strcat( eav[eac], *scrav);
+					strncpy( eav[eac], bname, bl+l);
+					eav[eac][bl+l] = '\0';
+					strncat( eav[eac], *scrav, bl+l-strlen(eav[eac]));
 
 					free (*scrav-sizeof(FILEINFO));
 					++scrav;
@@ -717,7 +720,7 @@ compare_ok( PATTERN *pat, char *name )
 	if (pat->queryflag) {
 		char buf[260];
 		printf("Select %s%-16s%s [y/n] ? ",o_hilite,name,o_lolite);
-		gets(buf);
+		fgets(buf, sizeof(buf), stdin);
 		return (toupper(*buf)=='Y');
 	}
 
@@ -1077,7 +1080,7 @@ clear_archive_bit( char *name )
 }
 
 char *
-itoa( int i )
+itoa( long i )
 {
 	static char buf[20];
 	char *pos=buf+19;
@@ -1099,7 +1102,7 @@ itoa( int i )
 }
 
 char *
-itok( int i )
+itok( long i )
 {
 #if 0
 	static char buf[16], which;

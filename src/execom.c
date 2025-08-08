@@ -5,8 +5,8 @@
  * Version 2.07M by Steve Drew 10-Sep-87
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
- * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
- * Version 5.60M by amigazen project 2025-08-07
+ * Version 5.20L and 5.50 by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M+ by amigazen project 2025-08-07
  *
  */
 
@@ -185,6 +185,7 @@ static struct COMMAND Command[] = {
  do_strright,  3, FUNC,     0, "strright",   NULL, "varname string n",
  do_strtail,   3, FUNC,     0, "strtail",    NULL, "varname breakchar string",
  do_tackon,    3, FUNC,     0, "tackon",     NULL, "var pathname filename",
+ do_getprogdir,0,    0,     0, "getprogdir", NULL, "",
  do_head,      0,    0,     1, "tail",       NULL, "[filename] [num]",
  do_tee,       0,    0,     0, "tee",        NULL, "<in >out",
  do_touch,     1,    0,     0, "touch",      NULL, "file...file",

@@ -7,8 +7,8 @@
  * Version 2.07M by Steve Drew 10-Sep-87
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by U. Dominik Mueller 17-Feb-91
- * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
- * Version 5.60M by amigazen project (Fri, 08 Aug 2025)
+ * Version 5.20L and 5.50 by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M+ by amigazen project (Fri, 08 Aug 2025)
  *
  */
 
@@ -16,12 +16,14 @@
 
 
 #define CSH_VER "5"
-#define CSH_REV "60"
+#define CSH_REV "80"
 
 
 static struct Window *getwindow(void);
 static void exectimer(int stop);
 static void set_kickversion(void);
+static void init_progdir_variables(void);
+static void print_help(void);
 char shellcompiled[]="Compiled: "__DATE__" "__TIME__" with "COMPILER"\n";
 
 char shellname[]    ="CShell "CSH_VER"."CSH_REV"";
@@ -104,9 +106,9 @@ struct MsgPort *Console=(struct MsgPort *)-1;
 long ExecTimer, ExecRC;
 
 #ifdef __SASC
-long __stack = 17500L;
+long __stack = 20000L;
 #endif
-static const char *stack_cookie = "$STACK: 17500";
+static const char *stack_cookie = "$STACK: 20000";
 
 main(int argc, char *argv[])
 {
@@ -250,9 +252,16 @@ main(int argc, char *argv[])
 	for( i=0; defalias[i]; i+=2 )
 		set_var( LEVEL_ALIAS, defalias[i], defalias[i+1] );
 
+	/* Initialize PROGDIR: variables with proper fallbacks */
+	init_progdir_variables();
+
 	o_nowindow= 0;
 
 	for (i = 1; i < argc; ++i) {
+		if (*argv[i]=='-' && (index(argv[i],'?')) || index(argv[i],'h')) {
+			print_help();
+			main_exit(0);
+		}
 		if (*argv[i]=='-' && (index(argv[i],'a') || index(argv[i],'t')))
 			o_nowindow=1;
 		if (*argv[i]=='-' && index(argv[i],'n'))
@@ -295,21 +304,21 @@ main(int argc, char *argv[])
 
 	if (login && !nologin) {
 		/*printf("we're the first csh today, mon ami!\n");*/
-		if( exists("SDK:S/.login"))
-			execute("source SDK:S/.login");
+		if( exists("S:.login"))
+			execute("source S:.login");
 	}
 
 	if (!nocshrc) {
-		if( exists("SDK:S/.cshrc"))
-			execute("source SDK:S/.cshrc");
+		if( exists("S:.cshrc"))
+			execute("source S:.cshrc");
 	}
 
 	{
 	char nam1[40],nam2[40],nam3[40];
 	BOOL e1,e2,e3;
-	strcpy(nam1,"ENVARC:"); strcat(nam1,shellctr);   e1=exists(nam1);
-	strcpy(nam2,"ENVARC:"); strcat(nam2,shellres);   e2=exists(nam2);
-	strcpy(nam3,"ENVARC:"); strcat(nam3,shellthere); e3=exists(nam3);
+	strncpy(nam1,"ENVARC:",sizeof(nam1)-1); nam1[sizeof(nam1)-1]='\0'; strncat(nam1,shellctr,sizeof(nam1)-strlen(nam1)-1);   e1=exists(nam1);
+	strncpy(nam2,"ENVARC:",sizeof(nam2)-1); nam2[sizeof(nam2)-1]='\0'; strncat(nam2,shellres,sizeof(nam2)-strlen(nam2)-1);   e2=exists(nam2);
+	strncpy(nam3,"ENVARC:",sizeof(nam3)-1); nam3[sizeof(nam3)-1]='\0'; strncat(nam3,shellthere,sizeof(nam3)-strlen(nam3)-1); e3=exists(nam3);
 
 	if (e1 || e2 || e3) {
 		printf("\nWARNING: please remove the following files from ENVARC:\n\n");
@@ -333,6 +342,8 @@ main(int argc, char *argv[])
 			char *str=argv[i]+1;
 			for( ; *str; str++ ) {
 				switch( *str) {
+				case '?':
+				case 'h': print_help(); main_exit(0); break;
 				case 'c':
 				case 'C': execute( compile_av( argv, i+1, argc, ' ',*str=='C'));
 				          main_exit(Lastresult); break;
@@ -423,7 +434,7 @@ main(int argc, char *argv[])
 	for (;;) {
 		if (breakcheck())
 			while (WaitForChar(Input(), 100L) || CHARSWAIT( stdin ))
-				gets(Inline);
+				fgets(Inline, sizeof(Inline), stdin);
 		clearerr(stdin);  /* prevent accidental quit */
 		/*
 		   AMK: new position of breakreset() before exec_every(),
@@ -453,7 +464,7 @@ main(int argc, char *argv[])
 #else
 			if (!NameFromLock(Myprocess->pr_CurrentDir, pwd, 255L)) {
 				fprintf(stderr,"csh.main: NameFromLock() failed\n");
-				strcpy(pwd,"<unknown>");
+				strncpy(pwd,"<unknown>",sizeof(pwd)-1); pwd[sizeof(pwd)-1]='\0';
 			}
 			if( !(old=get_var(LEVEL_SET, v_cwd)) )
 				old="";
@@ -481,7 +492,7 @@ main(int argc, char *argv[])
 #else
 		printf("%s", disable ? "_ " : trueprompt);
 		fflush(stdout);
-		if (Quit || !gets(Inline)) main_exit(0);
+		if (Quit || !fgets(Inline, sizeof(Inline), stdin)) main_exit(0);
 #endif
 		breakreset();
 
@@ -666,6 +677,48 @@ static void set_kickversion(void)
 	set_var(LEVEL_SET,"_kick",verstr);
 }
 
+/*
+ * print_help - Display command line usage information
+ */
+static void print_help(void)
+{
+	printf("%s - Enhanced C Shell for AmigaOS\n\n", shellname);
+	printf("Usage: csh [-abcCfhkLmMnNRstVwW] [-c command;command]\n");
+	printf("       csh [-abcCfhkLmMnNRstVwW] [batchfile1 ... batchfileN]\n\n");
+	printf("Options:\n");
+	printf("  -?/-h       Display this help message\n");
+	printf("  -a          AUX mode: No command line editing and text highlighting\n");
+	printf("  -b          Start shell in background (task priority -1)\n");
+	printf("  -c <cmd>    Execute command line and exit\n");
+	printf("  -C <cmd>    Same as -c, but command line not parsed twice\n");
+	printf("  -f          Start shell in foreground (task priority 1)\n");
+	printf("  -k          Set _nobreak before doing anything\n");
+#ifdef DO_ACS_KLUDGE
+	printf("  -K          Enable ACTION_CHANGE_SIGNAL kludge for KingCON/ToolManager\n");
+#endif
+	printf("  -L          Suppress starting of S:.logout\n");
+	printf("  -m          Set _nomatch (unset by default)\n");
+	printf("  -M          Don't clear menus (for KingCON compatibility)\n");
+	printf("  -n          Suppress starting of S:.login\n");
+	printf("  -N          Suppress starting of S:.cshrc\n");
+	printf("  -R          Disable raw console mode\n");
+	printf("  -s          Enable asterisk * as alias for #? (default behavior)\n");
+	printf("  -t          Terminal mode: VT100 compatible command line editing\n");
+	printf("  -v          Set _verbose to 'hs' before doing anything\n");
+	printf("  -V          Send only VT100 compatible control sequences\n");
+	printf("  -w          Don't fetch window pointer (for remote/KingCON iconify)\n");
+	printf("  -W          Disable window title changes\n\n");
+	printf("Environment Variables:\n");
+	printf("  CshCounter  Number of running CShell instances\n");
+	printf("  CshResident Set to enable resident mode\n");
+	printf("  CshLoggedIn Set when first shell instance starts\n\n");
+	printf("Files:\n");
+	printf("  S:.login    Executed on first login (if -n not used)\n");
+	printf("  S:.cshrc    Executed on shell startup (if -N not used)\n");
+	printf("  S:.logout   Executed on shell termination (if -L not used)\n\n");
+	printf("For more information, see the CShell documentation.\n");
+}
+
 #if 1
 static struct Window *
 getwindow(void)
@@ -768,3 +821,41 @@ rand()
 _waitwbmsg() {return 0;};
 
 #endif
+
+/*
+ * Initialize PROGDIR: variables with proper fallbacks
+ * This function ensures that PROGDIR: paths are properly resolved
+ * and fallback to reasonable defaults when PROGDIR: is not available
+ */
+static void init_progdir_variables(void)
+{
+    char resolved_path[256];
+    
+    /* Initialize v_qcd with PROGDIR: support */
+    if (IsProgramDirAvailable()) {
+        if (ResolveProgDirPath("SDK:C/csh-qcd", resolved_path, sizeof(resolved_path))) {
+            set_var(LEVEL_SET, v_qcd, resolved_path);
+        }
+    } else {
+        /* Fallback to current directory if PROGDIR: not available */
+        set_var(LEVEL_SET, v_qcd, "csh-qcd");
+    }
+    
+    /* Initialize v_prghash with PROGDIR: support */
+    if (IsProgramDirAvailable()) {
+        if (ResolveProgDirPath("SDK:C/csh-prgs", resolved_path, sizeof(resolved_path))) {
+            set_var(LEVEL_SET, v_prghash, resolved_path);
+        }
+    } else {
+        /* Fallback to current directory if PROGDIR: not available */
+        set_var(LEVEL_SET, v_prghash, "csh-prgs");
+    }
+    
+    /* Initialize _man with PROGDIR: support */
+    if (IsProgramDirAvailable()) {
+        if (ResolveProgDirPath("SDK:doc/csh.doc", resolved_path, sizeof(resolved_path))) {
+            set_var(LEVEL_SET, "_man", resolved_path);
+        }
+    }
+    /* Keep default SDK:doc/csh.doc if PROGDIR: not available */
+}

@@ -4,7 +4,7 @@
 #include <exec/types.h>
 
 
-#define ASCII_DOC	"SDK:doc/csh.doc"
+#define ASCII_DOC	"PROGDIR:/doc/csh.doc"
 #define HYPER_GUIDE	"SDK:Help/csh-tutorial.guide"
 #define HYPER_INDEX	"SDK:Help/csh.guide"
 

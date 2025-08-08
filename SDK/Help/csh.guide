@@ -7,7 +7,7 @@
 @node main "CShell documentation"
 @width 77
 
-  CShell 5.20+ REFERENCE,  Copyright 1991-1993 by the authors.
+  CShell 5.80 REFERENCE,  Copyright 1991-1993,2025 by the authors.
 
   @{"   Commands    " link Commands  }
   @{"   Variables   " link Variables }
@@ -130,7 +130,7 @@
 	The closing curly brace is optional if at the end of line.
 	Example:
 
-	alias assert {e "Are you sure? ";input -s sure
+	alias assert {e "Are you sure? ";input -s sure}
 
 @endnode
 @node ASCII
@@ -458,6 +458,7 @@
 
 	If you specify any wildcard deletes the files will be listed as
 	they are deleted. This can be suppressed by redirecting to nil:
+	delete *.tmp >nil:
 
 @endnode
 @node DIR 
@@ -788,6 +789,22 @@
 	ENV: variable is printed to stdout.
 	This command is obsolete since ENV: variables can be retrieved
 	by writing $envvar anywhere on the command line.
+
+@endnode
+@node GETPROGDIR
+
+    GETPROGDIR
+
+
+	Usage	: getprogdir
+	Example	: getprogdir
+
+	Displays information about the current program directory (PROGDIR:).
+	Shows whether PROGDIR: is available and displays the full path to
+	the directory containing the currently executing CShell binary.
+
+	This command is useful for scripts that need to reference files
+	relative to the shell's location, or for debugging PROGDIR: issues.
 
 @endnode
 @node GOTO
@@ -1421,7 +1438,7 @@
 	using rback, you can add a '&' at the end of the command line.
 
 	Note: rback cannot start builtin commands. You have to start a
-	      subshell: rback csh -c "copy ram:temp prt:;rm ram:temp
+	      subshell: rback csh -c "copy ram:temp prt:;rm ram:temp"
 
 @endnode
 @node READFILE
@@ -1812,7 +1829,7 @@
 
 	--------- file login.sh ---------
 	alias complex {
-	  echo -n "this alias
+	  echo -n "this alias"
 	  echo " works!"
 	}
 	---------------------------------
@@ -2165,22 +2182,22 @@
   @{"delete     " Link DELETE     }  @{"dir        " Link DIR        }  @{"diskchange " Link DISKCHANGE }  @{"echo       " Link ECHO       }  @{"else       " Link ELSE       }
   @{"endif      " Link ENDIF      }  @{"error      " Link ERROR      }  @{"exec       " Link EXEC       }  @{"fault      " Link FAULT      }  @{"filenote   " Link FILENOTE   }
   @{"flist      " Link FLIST      }  @{"fltlower   " Link FLTLOWER   }  @{"fltupper   " Link FLTUPPER   }  @{"foreach    " Link FOREACH    }  @{"forever    " Link FOREVER    }
-  @{"forline    " Link FORLINE    }  @{"fornum     " Link FORNUM     }  @{"getenv     " Link GETENV     }  @{"goto       " Link GOTO       }  @{"head       " Link HEAD       }
-  @{"help       " Link HELP       }  @{"history    " Link HISTORY    }  @{"howmany    " Link HOWMANY    }  @{"htype      " Link HTYPE      }  @{"if         " Link IF         }
-  @{"inc        " Link INC        }  @{"info       " Link INFO       }  @{"input      " Link INPUT      }  @{"join       " Link JOIN       }  @{"keymap     " Link KEYMAP     }
-  @{"label      " Link LABEL      }  @{"linecnt    " Link LINECNT    }  @{"ln         " Link LN         }  @{"local      " Link LOCAL      }  @{"ls         " Link LS         }
-  @{"makelink   " Link MAKELINK   }  @{"man        " Link MAN        }  @{"md         " Link MD         }  @{"mem        " Link MEM        }  @{"menu       " Link MENU       }
-  @{"mkdir      " Link MKDIR      }  @{"mv         " Link MV         }  @{"open       " Link OPEN       }  @{"path       " Link PATH       }  @{"pri        " Link PRI        }
-  @{"protect    " Link PROTECT    }  @{"ps         " Link PS         }  @{"pwd        " Link PWD        }  @{"qsort      " Link QSORT      }  @{"quit       " Link QUIT       }
-  @{"rback      " Link RBACK      }  @{"readfile   " Link READFILE   }  @{"rehash     " Link REHASH     }  @{"relabel    " Link RELABEL    }  @{"rename     " Link RENAME     }
-  @{"resident   " Link RESIDENT   }  @{"return     " Link RETURN     }  @{"rm         " Link RM         }  @{"rpn        " Link RPN        }  @{"run        " Link RUN        }
-  @{"rxrec      " Link RXREC      }  @{"rxsend     " Link RXSEND     }  @{"search     " Link SEARCH     }  @{"set        " Link SET        }  @{"setenv     " Link SETENV     }
-  @{"sleep      " Link SLEEP      }  @{"source     " Link SOURCE     }  @{"split      " Link SPLIT      }  @{"stack      " Link STACK      }  @{"strhead    " Link STRHEAD    }
-  @{"strings    " Link STRINGS    }  @{"strleft    " Link STRLEFT    }  @{"strlen     " Link STRLEN     }  @{"strmid     " Link STRMID     }  @{"strright   " Link STRRIGHT   }
-  @{"strtail    " Link STRTAIL    }  @{"tackon     " Link TACKON     }  @{"tail       " Link TAIL       }  @{"tee        " Link TEE        }  @{"touch      " Link TOUCH      }
-  @{"truncate   " Link TRUNCATE   }  @{"type       " Link TYPE       }  @{"unalias    " Link UNALIAS    }  @{"uniq       " Link UNIQ       }  @{"unset      " Link UNSET      }
-  @{"usage      " Link USAGE      }  @{"version    " Link VERSION    }  @{"waitforport" Link WAITFORPORT}  @{"whereis    " Link WHEREIS    }  @{"window     " Link WINDOW     }
-  @{"writefile  " Link WRITEFILE  }
+  @{"forline    " Link FORLINE    }  @{"fornum     " Link FORNUM     }  @{"getenv     " Link GETENV     }  @{"getprogdir " Link GETPROGDIR }  @{"goto       " Link GOTO       }
+  @{"head       " Link HEAD       }  @{"help       " Link HELP       }  @{"history    " Link HISTORY    }  @{"howmany    " Link HOWMANY    }  @{"htype      " Link HTYPE      }
+  @{"if         " Link IF         }  @{"inc        " Link INC        }  @{"info       " Link INFO       }  @{"input      " Link INPUT      }  @{"join       " Link JOIN       }
+  @{"keymap     " Link KEYMAP     }  @{"label      " Link LABEL      }  @{"linecnt    " Link LINECNT    }  @{"ln         " Link LN         }  @{"local      " Link LOCAL      }
+  @{"ls         " Link LS         }  @{"makelink   " Link MAKELINK   }  @{"man        " Link MAN        }  @{"md         " Link MD         }  @{"mem        " Link MEM        }
+  @{"menu       " Link MENU       }  @{"mkdir      " Link MKDIR      }  @{"mv         " Link MV         }  @{"open       " Link OPEN       }  @{"path       " Link PATH       }
+  @{"pri        " Link PRI        }  @{"protect    " Link PROTECT    }  @{"ps         " Link PS         }  @{"pwd        " Link PWD        }  @{"qsort      " Link QSORT      }
+  @{"quit       " Link QUIT       }  @{"rback      " Link RBACK      }  @{"readfile   " Link READFILE   }  @{"rehash     " Link REHASH     }  @{"relabel    " Link RELABEL    }
+  @{"rename     " Link RENAME     }  @{"resident   " Link RESIDENT   }  @{"return     " Link RETURN     }  @{"rm         " Link RM         }  @{"rpn        " Link RPN        }
+  @{"run        " Link RUN        }  @{"rxrec      " Link RXREC      }  @{"rxsend     " Link RXSEND     }  @{"search     " Link SEARCH     }  @{"set        " Link SET        }
+  @{"setenv     " Link SETENV     }  @{"sleep      " Link SLEEP      }  @{"source     " Link SOURCE     }  @{"split      " Link SPLIT      }  @{"stack      " Link STACK      }
+  @{"strhead    " Link STRHEAD    }  @{"strings    " Link STRINGS    }  @{"strleft    " Link STRLEFT    }  @{"strlen     " Link STRLEN     }  @{"strmid     " Link STRMID     }
+  @{"strright   " Link STRRIGHT   }  @{"strtail    " Link STRTAIL    }  @{"tackon     " Link TACKON     }  @{"tail       " Link TAIL       }  @{"tee        " Link TEE        }
+  @{"touch      " Link TOUCH      }  @{"truncate   " Link TRUNCATE   }  @{"type       " Link TYPE       }  @{"unalias    " Link UNALIAS    }  @{"uniq       " Link UNIQ       }
+  @{"unset      " Link UNSET      }  @{"usage      " Link USAGE      }  @{"version    " Link VERSION    }  @{"waitforport" Link WAITFORPORT}  @{"whereis    " Link WHEREIS    }
+  @{"window     " Link WINDOW     }  @{"writefile  " Link WRITEFILE  }
 @endnode
 
 
@@ -2602,7 +2619,7 @@
 
     _timeout
 
-	Set the timeout period (in microsends) for the connected terminal to
+	Set the timeout period (in microseconds) for the connected terminal to
 	respond to a WINDOW STATUS REQUEST (special Amiga control sequence
 	to get window bounds). Only used in terminal mode, of course.
 

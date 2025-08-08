@@ -54,13 +54,11 @@ Each component of **ToolKit** is open source and like *csh* here will have it's 
 
 ## Changelog
 
-See [CHANGELOG.md]
+See (CHANGELOG.md)
 
 ## To Do
 
-- Update code to exploit OS3.1 and 3.2 features where relevant, especially for memory management and localisation
-- Implement modern csh/tcsh and bash style script execution
-- Permanently remove deprecated files
+See (TODO.md)
 
 ## Contact 
 

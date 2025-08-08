@@ -85,6 +85,7 @@ long extOpen(char *name, long mode);
 void extClose(long fh);
 int do_basename(void);
 int do_tackon(void);
+int do_getprogdir(void);
 int do_resident(void);
 int loadres(char *s);
 int do_truerun(char *avline, int backflag);
@@ -202,8 +203,8 @@ char **and(char **av1, int ac1, char **av2, int ac2, int *ac, int base);
 char **without(char **av1, int ac1, char **av2, int ac2, int *ac, int base);
 char **or(char **av1, int ac1, char **av2, int ac2, int *ac, int base);
 void clear_archive_bit(char *name);
-char *itoa( int i );
-char *itok( int i );
+char *itoa( long i );
+char *itok( long i );
 char *getaction( char *class, char *action );
 int doaction( char *file, char *action, char *args );
 void *salloc( int len );
@@ -247,3 +248,9 @@ char *dofind(char *cmd, char *ext, char *buf, char *path);
 
 int setenv(char *var, char *val);
 
+/* Custom snprintf implementation for SAS/C */
+int snprintf(char *str, size_t size, const char *format, ...);
+int vsnprintf(char *str, size_t size, const char *format, va_list args);
+
+/* Filesystem-aware filename length functions */
+int get_max_filename_length(const char *path);

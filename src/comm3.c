@@ -3,8 +3,8 @@
  *
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
- * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
- * Version 5.60M by amigazen project 2025-08-07q
+ * Version 5.20L and 5.50 by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M+ by amigazen project 2025-08-07q
  */
 
 #include "shell.h"
@@ -1038,7 +1038,7 @@ exists( char *name )
 	int ret=0;
 
 	Myprocess->pr_WindowPtr = (APTR)(-1);
-	if ( strlen(nam)<=MAXFILENAME && (lock=Lock(name,ACCESS_READ))) {
+	if ( strlen(nam)<=get_max_filename_length(name) && (lock=Lock(name,ACCESS_READ))) {
 		UnLock(lock);
 		ret=1;
 	}

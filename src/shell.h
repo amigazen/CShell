@@ -9,7 +9,8 @@
  * Version 2.07M by Steve Drew 10-Sep-87
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 16-Mar-91
- * Version 5.60M by amigazen project 2025-08-06
+ * Version 5.20L and 5.50 by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M+ by amigazen project 2025-08-07
  *
  */
 
@@ -141,8 +142,10 @@
  #define MAXALIAS	20		/* Max. # of alias levels		*/
  #define MAXMYFILES	9		/* Max. # of internal files		*/
  #define MAXHASH		32		/* Max. #�of hash chains		*/
- #define MAXFILENAME	30
- 
+ #define MAXFILENAME_LEGACY	30  /* Legacy filesystem max filename length */
+ #define MAXFILENAME_LNFS	107 /* Long Name Filesystem max filename length */
+ #define MAXFILENAME	MAXFILENAME_LNFS /* Default to maximum supported length */
+
  #define LEVEL_SET		0		/* which variable list to use   */
  #define LEVEL_ALIAS		1
  #define LEVEL_LABEL		2
@@ -299,7 +302,7 @@
  #include "WindowBounds.h"
  
  /* DEBUG macros from the old CATS example */
- #define MYDEBUG  1
+ #define MYDEBUG  0
  void kprintf(UBYTE *fmt,...);
  void dprintf(UBYTE *fmt,...);
  #define DEBTIME 0
@@ -309,5 +312,11 @@
  #else
  #define D(x) ;
  #endif /* MYDEBUG */
+ 
+ /* PROGDIR: handling functions */
+BPTR GetCShellProgramDir(void);
+BPTR SetCShellProgramDir(BPTR lock);
+BOOL IsProgramDirAvailable(void);
+char *ResolveProgDirPath(char *path, char *buffer, int bufsize);
  
  

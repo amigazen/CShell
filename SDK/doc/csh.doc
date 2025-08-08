@@ -1,5 +1,5 @@
 
-		INSTRUCTIONS FOR C-SHELL VERSION: 5.50a (August 1996)
+		INSTRUCTIONS FOR CShell VERSION: 5.80
 		=====================================================
 
   Contents
@@ -46,12 +46,12 @@ Proposed final setup:  If you want to make csh resident, do the following:
   2. Make sure your s:startup-sequence contains:
 	resident dh1:tools/csh add
 	csh
-  4. In s:.login, put any commands to be called only once, like setmap,
+  4. In S:.login, put any commands to be called only once, like setmap,
 	assign, setclock. This is a shell script, use # for comments, and
 	don't use .key type commands.
-  5. In s:.cshrc, you put any commands that need to be executed on every
+  5. In S:.cshrc, you put any commands that need to be executed on every
 	invocation, like 'alias', 'set' and so on.
-  6. Put the following to s:cli-startup and s:shell-startup, so csh will be
+  6. Put the following to S:cli-startup and S:shell-startup, so csh will be
 	started in any window opened by NewCLI, NewShell or from workbench:
 		csh
 		endcli
@@ -61,9 +61,9 @@ Additionally,  I  recommend  to assign CSH:  somewhere and put your docs and
 CShell scripts there.  You can do the assign from inside the shell, it's not
 needed at startup.
 
-The file s:.cshrc is executed on every startup (of csh) if it exists,
-the file s:.login only on csh's first invocation after boot-time,
-the file s:.logout is executed on every termination (of csh).
+The file S:.cshrc is executed on every startup (of csh) if it exists,
+the file S:.login only on csh's first invocation after boot-time,
+the file S:.logout is executed on every termination (of csh).
 
 
 
@@ -151,7 +151,7 @@ Olivier Berger for the French translation of the doc.
 
 DISCLAIMER
 ----------
-Cshell (csh) is © Copyright 1991-1996 by Andreas M. Kirchwitz and all
+Cshell (csh) is ï¿½ Copyright 1991-1996 by Andreas M. Kirchwitz and all
 previous authors mentioned in the "CREDITS" section. All rights reserved.
 
 Any possesor of this version of "Cshell (csh)" for the Amiga is hereby
@@ -499,9 +499,11 @@ VIII. SHELL COMMANDS
     STARTUP OPTIONS
 	First to start shell from a CLI:
 
-	csh [-abcCfiknstv] [-c command;command]
-	csh [-abcCfiknstv] [batchfile1 ... batchfileN]
+	csh [-abcCfhkLmMnNRstVwW] [-c command;command]
+	csh [-abcCfhkLmMnNRstVwW] [batchfile1 ... batchfileN]
 
+	 -?  display help message with all command line options and exit
+	 -h  same as -? (displays help message)
 	 -a  AUX: mode. No command line editing and text highlighting
 	      (window opening is not forced and AUTO-windows don't lose
 	       the ability to be closed)
@@ -516,12 +518,15 @@ VIII. SHELL COMMANDS
 	 -f  starts shell in foreground, which means only task priority 1.
 	     you might reset this prioritiy to 0 at the end of your .login
 	 -k  sets _nobreak before doing anything
-	 -L  suppresses starting of s:.logout
+	 -K  enable ACTION_CHANGE_SIGNAL kludge for KingCON/ToolManager
+	     compatibility (only available if compiled with DO_ACS_KLUDGE)
+	 -L  suppresses starting of S:.logout
 	 -m  sets _nomatch  (which is unset by default)
 	 -M  don't clear menus (especially for KingCON),
 	     by default CSH clears menus of its window
-	 -n  suppresses starting of s:.login
-	 -N  suppresses starting of s:.cshrc
+	 -n  suppresses starting of S:.login
+	 -N  suppresses starting of S:.cshrc
+	 -R  disable raw console mode
 	 -s  globally enables the asterisk * as alias for #? in AmigaDOS 2.0
 	     This means you can use * inside file requesters as well.
 	     (obsolete option -- * is default -- #? is still allowed !!)
@@ -536,6 +541,7 @@ VIII. SHELL COMMANDS
 	 -w  don't fetch pointer of window Cshell is running in,
 	      eg, for running Cshell remote or with KingCON (iconify)
 	      (menus, titlebar and some window related commands disabled)
+	 -W  disable window title changes
 
     COMMAND EXECUTION
 
@@ -1322,6 +1328,18 @@ LIST OF COMMANDS:
 	This command is obsolete since ENV: variables can be retrieved
 	by writing $envvar anywhere on the command line.
 
+    GETPROGDIR
+
+	Usage	: getprogdir
+	Example	: getprogdir
+
+	Displays information about the current program directory (PROGDIR:).
+	Shows whether PROGDIR: is available and displays the full path to
+	the directory containing the currently executing CShell binary.
+
+	This command is useful for scripts that need to reference files
+	relative to the shell's location, or for debugging PROGDIR: issues.
+
     GOTO
 
 	Usage	: goto label
@@ -1882,7 +1900,7 @@ LIST OF COMMANDS:
 	Recommended usage:
 	First run "rehash" from your shell to build the program hash list.
 	Save this list to disk with "rehash -s".  Now include "rehash -l"
-	in "s:.cshrc" to load this list on every invocation of CShell.
+	in "S:.cshrc" to load this list on every invocation of CShell.
 
     RELABEL
 
@@ -3436,7 +3454,7 @@ If you type "set _hilite b" then text will be highlighted by making
 it bold.  See "man _hilite" for further information.
 
 If you want really fast text scrolling then avoid using colors in text
-output. For example, add "set _hilite b" in your "s:.cshrc" file.  And
+output. For example, add "set _hilite b" in your "S:.cshrc" file.  And
 configure other programs (like NewList, a very cool directory lister
 by Phil Dietz) so that they don't use colored output.
 

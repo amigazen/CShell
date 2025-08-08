@@ -1,16 +1,15 @@
 ######################################################################
 # Makefile to build Shell 6.00M under SAS/C 6.58
-#�NOTE: char's are UNSIGNED by default, and the executable's called 'csh'
 
 #CFLAGS	= OPTTIME NOSTKCHK NODEBUG    STRMERGE PARMS=REG UNSCHAR MCCONS
-CFLAGS	= INCDIR=include: STKCHK STKEXT ANSI STRCONS NODEBUG STRMERGE PARMS=REG UNSCHAR MCCONS UTILLIB
-LFLAGS	= NOICONS STRIPDEBUG
+CFLAGS	= INCDIR=include: STKCHK STKEXT STRCONS NODEBUG STRMERGE PARMS=REG MATH=s UNSCHAR MCCONS UTILLIB IGNORE=104 NOICONS
+LFLAGS	= STRIPDEBUG
 OPTIM	= OPTIMIZE OPTTIME
 GSTFILE	= cshell.gst
 DEST	= csh
-SRCS	= run.c main.c comm1.c comm2.c comm3.c execom.c set.c sub.c globals.c rawcon.c syms.c hypdoc.c WindowBounds.c
+SRCS	= run.c main.c comm1.c comm2.c comm3.c execom.c set.c sub.c globals.c rawcon.c syms.c hypdoc.c WindowBounds.c snprintf.c
 HDRS	= proto.h shell.h WindowBounds.h
-OBJS	= run.o main.o comm1.o comm2.o comm3.o execom.o set.o sub.o globals.o rawcon.o WindowBounds.o
+OBJS	= run.o main.o comm1.o comm2.o comm3.o execom.o set.o sub.o globals.o rawcon.o WindowBounds.o snprintf.o
 CC	= sc
 
 # OPTSIZE   = short code optimize      NOSTKCHK  = no stack overflow check
@@ -23,14 +22,14 @@ CC	= sc
 # MCCONS    = allow multi-char const   OPTTIME   = optimize time
 
 csh: $(OBJS)
-	slink FROM lib:cres.o $(OBJS) LIB LIB:scm.lib LIB:sc.lib LIB:debug.lib\
-		LIB:small.lib WITH LIB:utillib.with TO $(DEST).ld $(LFLAGS)
-	slink FROM $(DEST).ld TO $(DEST) $(LFLAGS) NODEBUG
-	@protect $(DEST)    add p quiet
-	@protect $(DEST).ld add p quiet
+	slink NOICONS FROM lib:cres.o $(OBJS) LIB LIB:scm.lib LIB:sc.lib LIB:debug.lib\
+		LIB:small.lib WITH LIB:utillib.with TO $(DEST)_debug
+	slink NOICONS FROM $(DEST)_debug TO $(DEST) $(LFLAGS)
+	@protect $(DEST) add p quiet
+	@protect $(DEST)_debug add p quiet
 
 $(GSTFILE): shell.h proto.h
-	@-avail flush
+	@-avail flush >NIL:
 	$(CC) UNSCHAR NOICONS NOOBJNAME MAKEGST=$(GSTFILE) syms.c
 
 comm1.o: comm1.c $(GSTFILE)
@@ -55,15 +54,18 @@ sub.o: sub.c $(GSTFILE)
 	$(CC) $(CFLAGS) $(OPTIM) GST=$(GSTFILE) sub.c
 WindowBounds.o: WindowBounds.c $(GSTFILE)
 	$(CC) $(CFLAGS) $(OPTIM) GST=$(GSTFILE) WindowBounds.c
+snprintf.o: snprintf.c $(GSTFILE)
+	$(CC) $(CFLAGS) $(OPTIM) GST=$(GSTFILE) snprintf.c
 
 install:
-	@echo "Installing CShell ..."
+	@echo "Releasing CShell to /SDK/C/csh..."
 	@copy $(DEST)    /SDK/C/csh    clone
 
 clean:
 	@echo "Cleaning up working directory ..."
-	@-delete $(GSTFILE) $(GSTFILE).info $(OBJS) $(DEST) $(DEST).ld quiet >nil:
+	@-delete $(GSTFILE) $(GSTFILE).info $(OBJS) $(DEST) $(DEST)_debug quiet >nil:
 	@-avail flush >nil:
+	@echo "Deleted" $(GSTFILE) $(GSTFILE).info $(OBJS) $(DEST) $(DEST)_debug
 
 #TODO: this section needs updating one day
 rel:
@@ -73,7 +75,7 @@ rel:
 	@eval `type sernum` + 1 >sernumtmp
 	@delete sernum quiet
 	@rename sernumtmp sernum
-	@copy csh:csh.ld csh:csh csh:release`type sernum` clone quiet
+	@copy csh:csh_debug csh:csh csh:release`type sernum` clone quiet
 	lha -a a csh.lha csh:csh csh:csh.doc History_OLD.Txt\
 		csh:csh-reference.guide csh:README csh:HISTORY\
 		csh:class.sh .DisplayMe csh:demo.sh csh:menu.sh\

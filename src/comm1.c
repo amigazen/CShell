@@ -7,11 +7,61 @@
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
  * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
- * Version 5.60M by amigazen project (Fri, 08 Aug 2025)
+ * Version 5.60M+ by amigazen project (Fri, 08 Aug 2025)
  *
  */
 
 #include "shell.h"
+
+/* these defines are new in OS 3.x */
+#ifndef ID_UNREADABLE_DISK
+#define ID_UNREADABLE_DISK (0x00000000L)
+#endif
+#ifndef ID_NOT_REALLY_DOS
+#define ID_NOT_REALLY_DOS (0x00000001L)
+#endif
+#ifndef ID_KICKSTART_DISK
+#define ID_KICKSTART_DISK (0x00000002L)
+#endif
+#ifndef ID_NO_DISK_PRESENT
+#define ID_NO_DISK_PRESENT (0x00000003L)
+#endif
+#ifndef ID_MSDOS_DISK
+#define ID_MSDOS_DISK (0x4D534400L)  /* 'MSD\0' */
+#endif
+#ifndef ID_DOS_DISK
+#define ID_DOS_DISK (0x444f5300L)    /* 'DOS\0' */
+#endif
+#ifndef ID_FFS_DISK
+#define ID_FFS_DISK (0x444F5301L)    /* 'DOS\1' */
+#endif
+#ifndef ID_INTER_DOS_DISK
+#define ID_INTER_DOS_DISK (0x444F5302L)  /* 'DOS\2' */
+#endif
+#ifndef ID_INTER_FFS_DISK
+#define ID_INTER_FFS_DISK (0x444F5303L)  /* 'DOS\3' */
+#endif
+#ifndef ID_FASTDIR_DOS_DISK
+#define ID_FASTDIR_DOS_DISK (0x444F5304L)
+#endif
+#ifndef ID_FASTDIR_FFS_DISK
+#define ID_FASTDIR_FFS_DISK (0x444F5305L)
+#endif
+#ifndef ID_OFS_LNFS
+#define ID_OFS_LNFS (0x444F5306L)  /* DOS\6 - Long Name OFS */
+#endif
+#ifndef ID_FFS_LNFS
+#define ID_FFS_LNFS (0x444F5307L)  /* DOS\7 - Long Name FFS */
+#endif
+#ifndef ID_WRITE_PROTECTED
+#define ID_WRITE_PROTECTED (0x00000000L)
+#endif
+#ifndef ID_VALIDATED
+#define ID_VALIDATED (0x00000001L)
+#endif
+#ifndef ID_VALIDATING
+#define ID_VALIDATING (0x00000002L)
+#endif
 
 /* comm1.c */
 static void display_file(char *filestr);
@@ -20,6 +70,30 @@ static int rm_file    ( long mask, char *s, char *fullpath );
 static int quicksearch(char *name, int nocasedep, char *pattern);
 static void setsystemtime(struct DateStamp *ds);
 static int found( char *lstart, int lnum, int loffs, char *name, char left );
+
+/* Get maximum filename length based on filesystem type */
+int get_max_filename_length(const char *path)
+{
+    BPTR lock;
+    struct InfoData *info;
+    int max_length = MAXFILENAME_LEGACY; /* Default to legacy limit */
+    
+    if ((lock = Lock(path, ACCESS_READ))) {
+        info = AllocMem(sizeof(struct InfoData), MEMF_PUBLIC|MEMF_CLEAR);
+        if (info) {
+            if (Info(lock, info)) {
+                /* Check for long filename filesystem types */
+                if (info->id_DiskType == ID_OFS_LNFS || 
+                    info->id_DiskType == ID_FFS_LNFS) {
+                    max_length = MAXFILENAME_LNFS;
+                }
+            }
+            FreeMem(info, sizeof(struct InfoData));
+        }
+        UnLock(lock);
+    }
+    return max_length;
+}
 
 void lformat( char *s, char *d, FILEINFO *info );
 
@@ -207,7 +281,7 @@ int do_chmod_internal(long arg_begin,long arg_end,long arg_flags)
 				             if (do_group) mask |= FIBF_GRP_READ;
 				             if (do_other) mask |= FIBF_OTR_READ;
 				           }
-				           else {
+				           else if (do_excl) {
 				             if (do_user)  mask |= FIBF_READ;
 				             if (do_group) mask &= (~FIBF_GRP_READ);
 				             if (do_other) mask &= (~FIBF_OTR_READ);
@@ -219,7 +293,7 @@ int do_chmod_internal(long arg_begin,long arg_end,long arg_flags)
 				             if (do_group) mask |= FIBF_GRP_WRITE;
 				             if (do_other) mask |= FIBF_OTR_WRITE;
 				           }
-				           else {
+				           else if (do_excl) {
 				             if (do_user)  mask |= FIBF_WRITE;
 				             if (do_group) mask &= (~FIBF_GRP_WRITE);
 				             if (do_other) mask &= (~FIBF_OTR_WRITE);
@@ -232,7 +306,7 @@ int do_chmod_internal(long arg_begin,long arg_end,long arg_flags)
 				             if (do_group) mask |= FIBF_GRP_EXECUTE;
 				             if (do_other) mask |= FIBF_OTR_EXECUTE;
 				           }
-				           else {
+				           else if (do_excl) {
 				             if (do_user)  mask |= FIBF_EXECUTE;
 				             if (do_group) mask &= (~FIBF_GRP_EXECUTE);
 				             if (do_other) mask &= (~FIBF_OTR_EXECUTE);
@@ -244,7 +318,7 @@ int do_chmod_internal(long arg_begin,long arg_end,long arg_flags)
 				             if (do_group) mask |= FIBF_GRP_DELETE;
 				             if (do_other) mask |= FIBF_OTR_DELETE;
 				           }
-				           else {
+				           else if (do_excl) {
 				             if (do_user)  mask |= FIBF_DELETE;
 				             if (do_group) mask &= (~FIBF_GRP_DELETE);
 				             if (do_other) mask &= (~FIBF_OTR_DELETE);
@@ -253,25 +327,25 @@ int do_chmod_internal(long arg_begin,long arg_end,long arg_flags)
 				case 'a' :
 				           if (do_incl)
 				             mask |= FIBF_ARCHIVE;
-				           else
+				           else if (do_excl)
 				             mask &= (~FIBF_ARCHIVE);
 				           break;
 				case 'p' :
 				           if (do_incl)
 				             mask |= FIBF_PURE;
-				           else
+				           else if (do_excl)
 				             mask &= (~FIBF_PURE);
 				           break;
 				case 's' :
 				           if (do_incl)
 				             mask |= FIBF_SCRIPT;
-				           else
+				           else if (do_excl)
 				             mask &= (~FIBF_SCRIPT);
 				           break;
 				case 'h' :
 				           if (do_incl)
 				             mask |= FIBF_HOLD;
-				           else
+				           else if (do_excl)
 				             mask &= (~FIBF_HOLD);
 				           break;
 				default  :
@@ -333,7 +407,7 @@ int do_chown(void)
 					muFreeUserInfo(info);
 					return 20;
 				}
-				strcpy(info->UserID,av[1]);
+				strncpy(info->UserID,av[1],sizeof(info->UserID)-1); info->UserID[sizeof(info->UserID)-1]='\0';
 				if (!(res = muGetUserInfo(info,muKeyType_UserID))) {
 					fprintf(stderr,"%s: no valid user.\n",av[1]);
 					muFreeUserInfo(info);
@@ -412,7 +486,7 @@ int do_chgrp(void)
 				muFreeGroupInfo(info);
 				return 20;
 			}
-			strcpy(info->GroupID,av[1]);
+			strncpy(info->GroupID,av[1],sizeof(info->GroupID)-1); info->GroupID[sizeof(info->GroupID)-1]='\0';
 			if (!(res = muGetGroupInfo(info,muKeyType_GroupID))) {
 				fprintf(stderr,"%s: no valid group.\n",av[1]);
 				muFreeGroupInfo(info);
@@ -674,7 +748,7 @@ int do_cat( void )
 			quickscroll();
 			l=buf+strlen( buf )-1; docr=1;
 			if( l>=buf && *l=='\n' ) docr=0;
-			fputs(buf,stdout);
+			fputs(buf,stdout); fflush(stdout);
 		}
 	} else {
 		for (i=1; i<ac; i++)
@@ -705,9 +779,10 @@ char *add_simple_device(char *list,char *dev)
 
 	if (list) {
 		if (new = malloc(strlen(dev)+strlen(list)+2)) {		/* null byte + \n */
-			strcpy(new,list);
-			strcat(new,dev);
-			strcat(new,"\n");
+			strncpy(new,list,strlen(list)+strlen(dev)+2);
+			new[strlen(list)+strlen(dev)+1] = '\0';
+			strncat(new,dev,strlen(dev)+1);
+			strncat(new,"\n",1);
 			free(list);
 		}
 		else
@@ -715,8 +790,9 @@ char *add_simple_device(char *list,char *dev)
 	}
 	else {
 		if (new = malloc(strlen(dev)+2)) {			/* null byte + \n */
-			strcpy(new,dev);
-			strcat(new,"\n");
+			strncpy(new,dev,strlen(dev)+2);
+			new[strlen(dev)+1] = '\0';
+			strncat(new,"\n",1);
 		}
 	}
 
@@ -739,7 +815,7 @@ get_drives(char *buf)
 		while (dl=NextDosEntry(dl,flags)) {
 			if (dl->dol_Task) {
 				BtoCStr(devname,dl->dol_Name,254L);  /* 256 - '\0' + ':' */
-				strcat(devname,":");
+				strncat(devname,":",254-strlen(devname));
 				add_array_list(&dev_list,&dev_num,devname);
 			}
 		}
@@ -751,8 +827,8 @@ get_drives(char *buf)
 	for(i=0; i<dev_num; i++) {
 		if (IsFileSystem(dev_list[i])) {
 			if (buf[0])
-				strcat(buf,"\240");
-			strcat(buf,dev_list[i]);
+				strncat(buf,"\240",sizeof(buf)-strlen(buf)-1);
+				strncat(buf,dev_list[i],sizeof(buf)-strlen(buf)-1);
 		}
 	}
 
@@ -793,7 +869,7 @@ drive_name( char *name )
 		while (dl=NextDosEntry(dl,flags)) {
 			if (dl->dol_Task) {
 				BtoCStr(devname,dl->dol_Name,254L);  /* 256 - '\0' + ':' */
-				strcat(devname,":");
+				strncat(devname,":",254-strlen(devname));
 				add_array_list(&dev_list,&dev_num,devname);
 			}
 		}
@@ -805,7 +881,7 @@ drive_name( char *name )
 	for(i=0; i<dev_num; i++) {
 		if (IsFileSystem(dev_list[i])) {
 			if ((struct MsgPort *)DeviceProc(dev_list[i])==proc)
-				strcpy(namebuf,dev_list[i]);
+				strncpy(namebuf,dev_list[i],sizeof(namebuf)-1); namebuf[sizeof(namebuf)-1]='\0';
 		}
 	}
 
@@ -823,6 +899,8 @@ do_info( void )
 	char **dev_list=NULL;
 	long i,dev_num=0;
 
+
+
 	if (options&2)
 		puts("Unit     Size  Block  Type   Used   Free Full Errs  Status    Name");
 	else
@@ -833,7 +911,7 @@ do_info( void )
 			while (dl=NextDosEntry(dl,flags)) {
 				if (dl->dol_Task) {
 					BtoCStr(devname,dl->dol_Name,254L);  /* 256 - '\0' + ':' */
-					strcat(devname,":");
+					strncat(devname,":",254-strlen(devname));
 					add_array_list(&dev_list,&dev_num,devname);
 				}
 			}
@@ -858,18 +936,6 @@ do_info( void )
 	return 0;
 }
 
-
-
-/* these defines are new in OS 3.x */
-#ifndef ID_FASTDIR_DOS_DISK
-#define ID_FASTDIR_DOS_DISK (0x444F5304L)
-#endif
-#ifndef ID_FASTDIR_FFS_DISK
-#define ID_FASTDIR_FFS_DISK (0x444F5305L)
-#endif
-
-
-
 /* AMK: new mode==6 to suppress output if disk is not present */
 char *
 oneinfo( char *name, int mode )
@@ -878,7 +944,7 @@ oneinfo( char *name, int mode )
 	struct DevProc *devproc;
 	struct DeviceList *dl;
 	BPTR lock;
-	long size, free, freebl, blocks;
+	ULONG size, free, freebl, blocks;
 	char buf[130], *state, *type;
 	char *fmt="%s\240%s\240%d\240%d\240%d\240%s\240%d%%\240%d\240%s\240%s";
 
@@ -966,20 +1032,19 @@ oneinfo( char *name, int mode )
 					case ID_INTER_FFS_DISK:   type="  INTL"; break;
 					case ID_FASTDIR_DOS_DISK: type="DC/OFS"; break;
 					case ID_FASTDIR_FFS_DISK: type="  DCFS"; break;
+					case ID_OFS_LNFS:        type="LN/OFS"; break; /* DOS\6 - Long Name OFS */
+					case ID_FFS_LNFS:        type="LN/FFS"; break; /* DOS\7 - Long Name FFS */
 					default:                  type="   n/a"; break;
 				}
-
-				strcpy(buf,"n/a");
+				strncpy(buf,"n/a",99); buf[99]='\0';
 				if (dl = (struct DeviceList *)BADDR(info->id_VolumeNode))
 					BtoCStr(buf,dl->dl_Name,100L);
-
 				switch(info->id_DiskState) {
 					case ID_WRITE_PROTECTED: state="Read Only "; break;
 					case ID_VALIDATED:       state="Read/Write"; break;
 					case ID_VALIDATING:      state="Validating"; break;
 					default:                 state="Unknown   "; break;
 				}
-
 #if 0
 				size   = (info->id_NumBlocks + 2) * info->id_BytesPerBlock;
 #endif
@@ -1034,9 +1099,12 @@ oneinfo( char *name, int mode )
 				else if (mode==5) sprintf(infobuf,"%s:",buf);
 			}
 		}
-		else
+		else {
 			pError(name);
+		}
 		FreeDeviceProc(devproc);
+	} else {
+		pError(name);
 	}
 
 #if 0
@@ -1157,11 +1225,11 @@ static char *LineBuf, *LinePos, LastWasDir, *LFormat, _LFormat[80], NoTitles;
 int
 do_dir( void )
 {
-	int i=1, c, eac, reverse, nump=ac, retcode=0;
+	int i=1, c, eac=0, reverse, nump=ac, retcode=0;
 	char **eav=NULL, **av1=NULL, **av2=NULL, inter=IsInteractive(Output());
 	char linebuf[1024];
 	char *fmtstr;
-	int (*func)(), ac1, ac2, factor=0;
+	int (*func)(), ac1=0, ac2=0, factor=0;
 
 	LineBuf=LinePos=linebuf;
 	LastWasDir=NoTitles=0;
@@ -1182,16 +1250,16 @@ do_dir( void )
 	if( inter )
 		wwidth=w_width;
 
-	if( options&DIR_SHORT )
+	if( options&DIR_SHORT ) {
 		strcpy(LFormat," %-18n%19m");
-	else if( options&DIR_PATH )
+	} else if( options&DIR_PATH ) {
 		strcpy(LFormat," %-50p %7s %d"), NoTitles=1;
-	else {
-		if ( options&DIR_NOTE )
+	} else {
+		if ( options&DIR_NOTE ) {
 			strcpy(LFormat,"  %-30n %o");
-		else if ( options&DIR_LINK )
+		} else if ( options&DIR_LINK ) {
 			strcpy(LFormat,"  %-30n %L");
-		else {
+		} else {
 #if 1
 			strcpy(LFormat,"  ");
 #else
@@ -1204,7 +1272,7 @@ do_dir( void )
 				strcat(LFormat,"%10v  ");
 			else
 				strcat(LFormat,"%8s  ");
-#if 0
+#if 1
 			if( !(options&DIR_QUIET) )
 				strcat(LFormat,options&DIR_VIEW?"%5b ":"%4b ");
 #endif
@@ -1225,8 +1293,7 @@ do_dir( void )
 
 	if ( options&DIR_LFORM ) {
 		if ( fmtstr=get_var(LEVEL_SET,v_dirformat) ) {
-			strncpy(LFormat,fmtstr,79);	/* copy to _LFormat[80] */
-			LFormat[79]=0;
+			strcpy(LFormat,fmtstr);
 		}
 		else if (ac>1)
 			LFormat=av[i++];
@@ -1239,8 +1306,7 @@ do_dir( void )
 	/* variable _dirformat always used, can be overwritten by -z fmt */
 
 	if ( fmtstr=get_var(LEVEL_SET,v_dirformat) ) {
-		strncpy(LFormat,fmtstr,79);	/* copy to _LFormat[80] */
-		LFormat[79]=0;
+		strcpy(LFormat,fmtstr);
 	}
 
 	if ( options&DIR_LFORM ) {
@@ -1363,6 +1429,10 @@ display_file( char *filestr )
 	char sc, *base, buf[1024], *hilite;
 	FILEINFO *info;
 	BPTR thislock;
+	
+	D(fprintf(stderr, "DEBUG: display_file called with: '%s'\n", filestr));
+	
+
 
 	base=FilePart(filestr);
 	sc = *base;
@@ -1376,7 +1446,7 @@ display_file( char *filestr )
 			quickscroll();
 			if (!NameFromLock(thislock, buf, 256)) {
 				fprintf(stderr,"csh.display_file: NameFromLock() failed\n");
-				strcpy(buf,filestr);
+				strncpy(buf,filestr,255); buf[255]='\0';
 			}
 			if( LastWasDir )
 				printf(o_lolite), LastWasDir=0;
@@ -1385,7 +1455,7 @@ display_file( char *filestr )
 			/* itok((id->id_NumBlocks-id->id_NumBlocksUsed)*id->id_BytesPerBlock));*/
 			/* FreeMem( id, sizeof(struct InfoData)); */
 			lastpath = salloc(256);
-			strcpy(lastpath,filestr);
+							strncpy(lastpath,filestr,255); lastpath[255]='\0';
 			/*lastpath=filestr;*/
 			UnLock(thislock);
 		}
@@ -1403,6 +1473,7 @@ display_file( char *filestr )
 		hilite=isadir ? o_hilite : o_lolite, LastWasDir=isadir;
 
 	lformat(LFormat, buf, info);
+	D(fprintf(stderr, "DEBUG: after lformat, buf='%s'\n", buf));
 
 	if( MultiCol == -1 ) {
 		quickscroll();
@@ -1420,7 +1491,7 @@ display_file( char *filestr )
 			colw=len;
 		collen= (len+colw-1)-(len+colw-1)%colw;
 		col+=collen;
-		LinePos+=sprintf(LinePos,"%s%-*s",hilite,collen,buf);
+							LinePos += sprintf(LinePos, "%s%-*s", hilite, collen, buf);
 	}
 
 	if(info->size>0)
@@ -1429,7 +1500,6 @@ display_file( char *filestr )
 	filecount++;
 }
 
-static char linebuf[1024];
 static long dlen, dblocks;
 
 static int
@@ -1451,10 +1521,11 @@ void ReadSoftLink(char *path, char *buf, int buflen)
 	UBYTE *bs;
 	struct MsgPort *port;
 
-	if (buflen>9)
-		strcpy(buf,"<unknown>");
-	else
+	if (buflen>9) {
+		strncpy(buf,"<unknown>",sizeof(buf)-1); buf[sizeof(buf)-1]='\0';
+	} else {
 		buf[0] = '\0';	/* just terminate buffer. alternative ? */
+	}
 
 	if ( (l=strlen(path)) > 254 )
 		return;
@@ -1500,7 +1571,12 @@ lformat( char *s, char *d, FILEINFO *info )
 	char buf[1024], *w, *class;
 	DPTR *dp;
 	int stat, i, form, sign, cut, size=info->size;
-	char *(*func)(int num);
+	char *(*func)(long num);
+	
+	D(fprintf(stderr, "DEBUG: lformat called with format: '%s'\n", s));
+	D(fprintf(stderr, "DEBUG: info->size=%ld, info->blocks=%ld\n", info->size, info->blocks));
+	
+
 
 	MultiCol = -1;
 	while( *s ) {
@@ -1511,14 +1587,14 @@ lformat( char *s, char *d, FILEINFO *info )
 		while( *s>='0' && *s<='9' ) form=10*form+*s++-'0';
 		w=buf; w[0]=0; w[1]=0;
 		switch( *s ) {
-		case 'p': strcpy(w,(char *)(info+1));             break;
+		case 'p': strcpy(w,(char *)(info+1)); break;
 		case 'b': sprintf(w,size>=0 ? "%d":"", info->blocks); break;
 		case 's': sprintf(w,size>=0 ? "%d":"<Dir>",size); break;
 		case 'i': *w= size>=0 ? '-' : 'd';                break;
 		case 'r':
 		case 'u':
 			if( *s=='r' ) func=itoa; else func=itok;
-			strcpy( w,size>=0 ? (*func)(size) : "<Dir>");
+			strcpy(w,size>=0 ? (*func)(size) : "<Dir>");
 			break;
 		case 'n':
 		case 'q':
@@ -1539,10 +1615,11 @@ lformat( char *s, char *d, FILEINFO *info )
 			break;
 		case 'L':
 		case 'N':
-			if (*s=='N')
+			if (*s=='N') {
 				strcpy(w,FilePart((char *)(info+1)));
-			else
-				strcpy(w,"");
+			} else {
+				w[0] = '\0';
+			}
 			if (info->type==ST_SOFTLINK) {
 				strcat(w," -> ");
 				ReadSoftLink((char *)(info+1),w+strlen(w),256);
@@ -1605,7 +1682,7 @@ lformat( char *s, char *d, FILEINFO *info )
 			break;
 		case 'o':
 			if( dp=dopen( (char *)(info+1), &stat )) {
-				strcpy( w, dp->fib->fib_Comment );
+				strncpy(w, dp->fib->fib_Comment, sizeof(buf)-1); w[sizeof(buf)-1]='\0';
 				dclose( dp );
 			}
 			break;
@@ -1616,17 +1693,19 @@ lformat( char *s, char *d, FILEINFO *info )
 			if( size<0 ) {
 				newrecurse( SCAN_DIR|SCAN_FILE|SCAN_RECURSE,
 				            (char *)(info+1),count);
-				strcpy( w, (*func)(dlen));
+				strncpy(w, (*func)(dlen), sizeof(buf)-1); w[sizeof(buf)-1]='\0';
 				info->size=size=dlen; info->blocks=dblocks;
-			} else
-				strcpy( w, (*func)(size));
+			} else {
+				strncpy(w, (*func)(size), sizeof(buf)-1); w[sizeof(buf)-1]='\0';
+			}
 			break;
 		case 'k':
-			if( *info->class!=1 )
-				strcpy(w,info->class);
-			else if( class=getclass((char *)(info+1)))
+			if( *info->class!=1 ) {
+				strncpy(w,info->class,sizeof(buf)-1); w[sizeof(buf)-1]='\0';
+			} else if( class=getclass((char *)(info+1))) {
 				if( w=index(strncpy(w,class,50),0xA0) )
 					*w=0;
+			}
 			break;
 		case 'x':
 		case 'd':
@@ -1656,6 +1735,7 @@ lformat( char *s, char *d, FILEINFO *info )
 	}
 	if( MultiCol == -1 ) { *d++='\n'; }
 	*d=0;
+
 }
 
 
@@ -1670,8 +1750,9 @@ do_quit( void )
 		return(do_return());
 	}
 	if (!nologout) {
-		if( exists("S:.logout"))
+		if( exists("S:.logout")) {
 			execute("source S:.logout");
+		}
 	}
 	main_exit(0);
 	return 0;
@@ -1763,7 +1844,7 @@ do_source( char *str )
 	FILE *fi;
 	char *buf;
 	ROOT *root;
-	int  retcode, len, bufsize=512+MAXLINE;
+	int  retcode=0, len, bufsize=512+MAXLINE;
 	int j;
 	char *ptr;
 
@@ -1792,7 +1873,7 @@ do_source( char *str )
 		char npos[6];
 
 		var = ptr;
-		sprintf (p, "%d", j);
+		snprintf (p, sizeof(p), "%d", j);
 		/*
 		 * term var str
 		 */
@@ -1808,10 +1889,10 @@ do_source( char *str )
 		 * now set up what should be $# ( number of positionals )
 		 */
 #if 0
-		sprintf (p, "_N");	/* should be "#" but csh barfs :( */
+		snprintf (p, sizeof(p), "_N");	/* should be "#" but csh barfs :( */
 #endif
-		sprintf (p, "#");	/* hackin' */
-		sprintf (npos, "%d", j++);
+		snprintf (p, sizeof(p), "#");	/* hackin' */
+		snprintf (npos, sizeof(npos), "%ld", (long)j++);
 		set_var (LEVEL_SET | LEVEL_LOCAL, p, npos);
 	}
 
@@ -1860,7 +1941,7 @@ set_cwd(void)
 
 	if (!NameFromLock(Myprocess->pr_CurrentDir, pwd, 254)) {
 		fprintf(stderr,"csh.set_cwd: NameFromLock() failed\n");
-		strcpy(pwd,"<unknown>");
+		strncpy(pwd,"<unknown>",255); pwd[255]='\0';
 	}
 	set_var(LEVEL_SET, v_cwd, pwd);
 	/* put the current dir name in our CLI task structure */
@@ -1937,8 +2018,9 @@ do_cd(void)
 			{ pError(buf); return 20; }
 	}
 	if (oldlock=CurrentDir(filelock)) UnLock(oldlock);
-	if( !(old=get_var(LEVEL_SET, v_cwd)) )
+	if( !(old=get_var(LEVEL_SET, v_cwd)) ) {
 		old="";
+	}
 	set_var(LEVEL_SET, v_lcd, old);
 	set_cwd();
 
@@ -1951,7 +2033,7 @@ quick_cd( char *buf, char *name, int repeat )
 	if( !o_csh_qcd || !exists(o_csh_qcd))
 		return NULL;
 	qcd_flag=repeat ? 2 : 1;
-	strcpy(buf,name);
+	strncpy(buf,name,sizeof(buf)-1); buf[sizeof(buf)-1]='\0';
 	if( quicksearch( o_csh_qcd, 1, buf)!=2 )
 		return NULL;
 	return buf;
@@ -2004,7 +2086,7 @@ do_mv( void )
 	dirflag=isdir(dest=av[--ac]);
 	if (ac>3 && !dirflag) { ierror(dest, 507); return (-1); }
 	for (i=1; i<ac; ++i) {
-		strcpy(buf, dest);
+		strncpy(buf, dest, sizeof(buf)-1); buf[sizeof(buf)-1]='\0';
 
 		/* source: remove trailing slash */
 		if ((len=strlen(av[i]))>1 && av[i][len-1]=='/' && av[i][len-2]!=':' && av[i][len-2]!='/')
@@ -2135,8 +2217,8 @@ search_file( long mask, char *s, char *fullpath )
 		fflush( stdout );
 	}
 
-	strcpy(searchit,searchstring);
-	if (options & SEARCH_WILD) strcat(searchit,"\n");
+	strncpy(searchit,searchstring,sizeof(searchit)-1); searchit[sizeof(searchit)-1]='\0';
+	if (options & SEARCH_WILD) strncat(searchit,"\n",sizeof(searchit)-strlen(searchit)-1);
 	len=strlen(searchit);
 	if (nocasedep) strupr(searchit);
 	first = *searchit;
@@ -2163,7 +2245,7 @@ search_file( long mask, char *s, char *fullpath )
 			yesno=compare_ok(pat, p=buf);
 		else {
 			if (nocasedep) {
-				strcpy(lowbuf,buf);
+				strncpy(lowbuf,buf,sizeof(lowbuf)-1); lowbuf[sizeof(lowbuf)-1]='\0';
 				strupr(lowbuf);
 				p=lowbuf;
 			} else
@@ -2425,8 +2507,9 @@ do_mem( void )
 		clast=cfree, flast=ffree;
 		return 0;
 	}
-	if( options&16 )
+	if( options&16 ) {
 		cfree=clast-cfree, ffree=flast-ffree, desc="Used";
+	}
 	if( options&4 ) {
 		if     ( options & 1 ) printf("%lu\n",cfree);
 		else if( options & 2 ) printf("%lu\n",ffree);
@@ -2484,11 +2567,12 @@ do_forline( void )
 	int lctr;
 	FILE *f;
 
-	strcpy(vname,av[1]);
-	if( !strcmp(av[2],"STDIN") )
+	strncpy(vname,av[1],sizeof(vname)-1); vname[sizeof(vname)-1]='\0';
+	if( !strcmp(av[2],"STDIN") ) {
 		f=stdin;
-	else 
+	} else {
 		if(!(f=fopen(av[2],"r"))) { pError(av[2]); return 20; }
+	}
 
 	lctr=0;
 	++H_stack;
@@ -2497,7 +2581,7 @@ do_forline( void )
 		buf[strlen(buf)-1]='\0';	/* remove CR */
 		lctr++;
 		set_var(LEVEL_SET | LEVEL_LOCAL, vname, buf);
-		sprintf(buf,"%d",lctr);
+		snprintf(buf,sizeof(buf),"%d",lctr);
 		set_var(LEVEL_SET | LEVEL_LOCAL, v_linenum, buf);
 		exec_command(cstr);
 	}
@@ -2519,26 +2603,28 @@ do_fornum( void )
 	char *cstr;
 
 	verbose=(options & 1);
-	strcpy(vname,av[i++]);
+	strncpy(vname,av[i++],sizeof(vname)-1); vname[sizeof(vname)-1]='\0';
 	n1=myatoi(av[i++],-32767,32767); if (atoierr) return 20;
 	n2=myatoi(av[i++],-32767,32767); if (atoierr) return 20;
 	if (options & 2) {
 		step=myatoi(av[i++],-32767,32767); if (atoierr) return 20;
-	} else
+	} else {
 		step=1;
+	}
 	++H_stack;
 	cstr = compile_av (av, i, ac, ' ', 0);
 	for (i=n1; (step>=0 ? i<=n2 : i>=n2) && !CHECKBREAK() && !breakcheckd();
 	     i+=step, runs++) {
 		if (verbose) fprintf(stderr, "fornum: %d\n", i);
-		sprintf(buf,"%d",i);
+		snprintf(buf,sizeof(buf),"%d",i);
 		set_var (LEVEL_SET | LEVEL_LOCAL, vname, buf);
 		exec_command(cstr);
 	}
 	--H_stack;
 	free (cstr);
-	if( runs )
+	if( runs ) {
 		unset_var (LEVEL_SET, vname);
+	}
 	return 0;
 }
 
@@ -2560,7 +2646,7 @@ do_foreach( void )
 	int i=1, verbose;
 
 	verbose=(options & 1);
-	strcpy(vname, av[i++]);
+	strncpy(vname, av[i++], sizeof(vname)-1); vname[sizeof(vname)-1]='\0';
 	if (*av[i] == '(') i++;
 	cstart = i;
 	while (i<ac && *av[i] != ')') i++;
@@ -2581,8 +2667,9 @@ do_foreach( void )
 	--H_stack;
 	free (fav);
 	free (cstr);
-	if( cstart<cend)
+	if( cstart<cend) {
 		unset_var (LEVEL_SET, vname);
+	}
 	return 0;
 }
 
@@ -2657,11 +2744,11 @@ int do_window( void )
 			list = LockPubScreenList();
 			for (node = list->lh_Head; node->ln_Succ; node = node->ln_Succ) {
 				if (((struct PubScreenNode *)node)->psn_Screen == scrn)
-					sprintf(PubNameBuf," [%s]",node->ln_Name);
+					snprintf(PubNameBuf,sizeof(PubNameBuf)," [%s]",node->ln_Name);
 			}
 			UnlockPubScreenList();
 
-			sprintf(fmt,"Screen %c%.*s%c%s (%d,%d,%dx%dx%d):\n",
+			snprintf(fmt,sizeof(fmt),"Screen %c%.*s%c%s (%d,%d,%dx%dx%d):\n",
 				scrn->Title ? '\"' : '(',
 				(options&64) ? 128 : (((w_width-36-strlen(PubNameBuf)) > 0) ? (w_width-36-strlen(PubNameBuf)) : 30),
 				scrn->Title ? scrn->Title : "no title",
@@ -2676,7 +2763,7 @@ int do_window( void )
 			add_array_list(&ibase_list,&ibase_num,fmt);
 
 			for (window=scrn->FirstWindow; window; window=window->NextWindow) {
-				sprintf(fmt,"   win %c%.*s%c (%d,%d,%dx%d)\n",
+				snprintf(fmt,sizeof(fmt),"   win %c%.*s%c (%d,%d,%dx%d)\n",
 					window->Title ? '\"' : '(',
 					(options&64) ? 128 : w_width-32,
 					window->Title ? window->Title : "no title",
@@ -2689,8 +2776,9 @@ int do_window( void )
 				add_array_list(&ibase_list,&ibase_num,fmt);
 			}
 
-			if (scrn->NextScreen)
+			if (scrn->NextScreen) {
 				add_array_list(&ibase_list,&ibase_num,"\n");
+			}
 		}
 
 		UnlockIBase(ibase_lock);
@@ -2703,18 +2791,28 @@ int do_window( void )
 		return 0;
 	}
 
-	if( o_nowindow || !Mywindow )
+	if( o_nowindow || !Mywindow ) {
 		return 20;
+	}
 
 	maxwidth = Mywindow->WScreen->Width;
 	maxheight= Mywindow->WScreen->Height;
 
-	if( options&1 )
+	if( options&1 ) {
 		x=Mywindow->LeftEdge,y=Mywindow->TopEdge,w=Mywindow->MinWidth,h=Mywindow->MinHeight;
-	if( options&2 ) x=y=0, w=maxwidth, h=maxheight;
-	if( options&4 ) WindowToFront(Mywindow);
-	if( options&8 ) WindowToBack(Mywindow);
-	if( options&16) ActivateWindow(Mywindow);
+	}
+	if( options&2 ) {
+		x=y=0, w=maxwidth, h=maxheight;
+	}
+	if( options&4 ) {
+		WindowToFront(Mywindow);
+	}
+	if( options&8 ) {
+		WindowToBack(Mywindow);
+	}
+	if( options&16) {
+		ActivateWindow(Mywindow);
+	}
 
 	if( ac == 5 ) {
 		x = myatoi(av[1],-2,maxwidth-Mywindow->MinWidth); if (atoierr) return 20;
@@ -2722,15 +2820,31 @@ int do_window( void )
 		w = myatoi(av[3],-2,maxwidth); if (atoierr) return 20;
 		h = myatoi(av[4],-2,maxheight); if (atoierr) return 20;
 
-		if (x == -1) x = 0;
-		if (y == -1) y = 0;
-		if (w == -1) w = maxwidth;
-		if (h == -1) h = maxheight;
+		if (x == -1) {
+			x = 0;
+		}
+		if (y == -1) {
+			y = 0;
+		}
+		if (w == -1) {
+			w = maxwidth;
+		}
+		if (h == -1) {
+			h = maxheight;
+		}
 
-		if (x == -2) x = Mywindow->LeftEdge;
-		if (y == -2) y = Mywindow->TopEdge;
-		if (w == -2) w = Mywindow->Width;
-		if (h == -2) h = Mywindow->Height;
+		if (x == -2) {
+			x = Mywindow->LeftEdge;
+		}
+		if (y == -2) {
+			y = Mywindow->TopEdge;
+		}
+		if (w == -2) {
+			w = Mywindow->Width;
+		}
+		if (h == -2) {
+			h = Mywindow->Height;
+		}
 	}
 	else if ( ac != 1 ) {
 		fprintf(stderr,"Usage: window <pos_x> <pos_y> <width> <height>\n");
@@ -2746,14 +2860,18 @@ int do_window( void )
 			return 20;
 		}
 #endif
-		if ( x+w>maxwidth )
+		if ( x+w>maxwidth ) {
 			x = maxwidth - w;	/* alternatively: w=maxwidth-x; */
-		if ( y+h>maxheight )
+		}
+		if ( y+h>maxheight ) {
 			y = maxheight - h;	/* alternatively: h=maxheight-y; */
-		if( w<Mywindow->MinWidth )
+		}
+		if( w<Mywindow->MinWidth ) {
 			w = Mywindow->MinWidth;
-		if( h<Mywindow->MinHeight )
+		}
+		if( h<Mywindow->MinHeight ) {
 			h = Mywindow->MinHeight;
+		}
 
 		/* IDCMP_CHANGEWINDOW sucks */
 
@@ -2762,8 +2880,9 @@ int do_window( void )
 			Delay(25);
 			for( i=0; i<10; i++ ) {
 				if(  Mywindow->LeftEdge==x && Mywindow->TopEdge==y &&
-				     Mywindow->Width   ==w && Mywindow->Height ==h )
+				     Mywindow->Width   ==w && Mywindow->Height ==h ) {
 					break;
+				}
 				Delay(5);
 			}
 			Delay(25);
@@ -2778,8 +2897,9 @@ int do_window( void )
 			}
 			else {
 				/* make window recognize IDCMP_CHANGEWINDOW temporarily */
-				if (!ModifyIDCMP(Mywindow,Mywindow->IDCMPFlags|IDCMP_CHANGEWINDOW))
+				if (!ModifyIDCMP(Mywindow,Mywindow->IDCMPFlags|IDCMP_CHANGEWINDOW)) {
 					fprintf(stderr,"CSHELL ERROR: cannot install IDCMP_CHANGEWINDOW.\n");
+				}
 				ChangeWindowBox(Mywindow,x,y,w,h);
 				Delay(250);
 				wait_refresh(Mywindow);
@@ -2853,11 +2973,11 @@ dates( struct DateStamp *dss, int flags )
 	if(  myds->ds_Days<0   || myds->ds_Days>36500 ||
 	     myds->ds_Minute<0 || myds->ds_Minute>1440 ||
 	     myds->ds_Tick<0   || myds->ds_Tick>3000 || !DateToStr(&dt) )
-		strcpy(tdate,"---------"), strcpy(ttime,"--------");
+		strncpy(tdate,"---------",sizeof(tdate)-1), tdate[sizeof(tdate)-1]='\0', strncpy(ttime,"--------",sizeof(ttime)-1), ttime[sizeof(ttime)-1]='\0';
 
 #if 0
 	ttime[8] = '\0';
-	sprintf(timestr,"%-9s %-8s",tdate,ttime);
+	snprintf(timestr,sizeof(timestr),"%-9s %-8s",tdate,ttime);
 #endif
 
 	/* strip off leading spaces from 'tdate' -> result in 'dp' */
@@ -2888,7 +3008,7 @@ dates( struct DateStamp *dss, int flags )
 	while (strlen(dp) > 9)
 		strdel(dp,6,1);
 
-	sprintf(timestr,"%-9.9s %-8.8s",dp,tp);
+	snprintf(timestr,sizeof(timestr),"%-9.9s %-8.8s",dp,tp);
 
 	timestr[18] = '\0';	/* protection against bad timestamped files */
 
@@ -3008,5 +3128,33 @@ do_date (void)
 		setsystemtime (&(dt.dat_Stamp));
 	}
 	return 0;
+}
+
+/*
+ * Get PROGDIR: functionality
+ * This function can be used to verify that PROGDIR: is working correctly
+ */
+int do_getprogdir(void)
+{
+    char resolved_path[256];
+    BPTR progdir_lock;
+    
+    /* Test if PROGDIR: is available */
+    /* printf("PROGDIR: available: %s\n", IsProgramDirAvailable() ? "Yes" : "No"); */
+    
+    /* Test GetCShellProgramDir() */
+    progdir_lock = GetCShellProgramDir();
+    if (progdir_lock) {
+        char progdir_name[256];
+        if (NameFromLock(progdir_lock, progdir_name, sizeof(progdir_name))) {
+            printf("%s\n", progdir_name);
+        } else {
+            printf("<name too long>\n");
+        }
+        /* Note: GetProgramDir() returns a shared lock that should NOT be unlocked */
+    } else {
+        printf("<not available>\n");
+    }
+    return 0;
 }
 

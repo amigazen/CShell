@@ -8,8 +8,8 @@
  * Version 2.07M by Steve Drew 10-Sep-87
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
- * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
- * Version 5.60M by amigazen project 2025-08-07
+ * Version 5.20L and 5.50 by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M+ by amigazen project 2025-08-07
  *
  */
 
@@ -39,7 +39,7 @@ do_run( char *str, int nosync )
 	if (strlen(av[0]) > 100) { ierror(NULL,509); return -1; }
 
 	if( ac==1 && isdir(av[0])) {
-		sprintf(buf,"cd \"%s\"",av[0]);
+		if(strlen(av[0]) < sizeof(buf)-10) sprintf(buf,"cd \"%s\"",av[0]); else { ierror(NULL,506); return -1; }
 		return execute( buf );
 	}
 
@@ -49,7 +49,7 @@ do_run( char *str, int nosync )
 		return 20;
 	}
 
-	sprintf(buf,"res_%s",FilePart(av[0]));               /* delayed residents */
+	if(strlen(FilePart(av[0])) < sizeof(buf)-10) sprintf(buf,"res_%s",FilePart(av[0])); else { ierror(NULL,506); return -1; }               /* delayed residents */
 	/* AMK: OS20-GetVar replaces ARP-Getenv */
 	if (o_resident && GetVar(buf,buf+100,90L,GVF_GLOBAL_ONLY|GVF_BINARY_VAR)>=0L) {
 		/* AMK: OS20-SetVar replaces ARP-Setenv */
@@ -97,10 +97,10 @@ do_run( char *str, int nosync )
 					sprintf(dynbuf, "Rx %s", str );
 				} else if( (buf[0]!=';' || buf[0]!='#') && buf[1]=='!' ) {
 					memmove(dynbuf,buf+2,strlen(buf+2)+1);
-					strcat( dynbuf," ");
-					strcat( dynbuf,str);
+					strncat( dynbuf," ", strlen(buf)+strlen(str)+9-strlen(dynbuf));
+					strncat( dynbuf,str, strlen(buf)+strlen(str)+9-strlen(dynbuf));
 				} else {
-					sprintf(dynbuf,"Execute %s", str );
+					sprintf(dynbuf, "Execute %s", str );
 				}
 				dynret = execute( a0tospace(dynbuf));
 
@@ -559,7 +559,11 @@ MySyncRun( char *com, char *args, BPTR in, BPTR out, int nosync )
 	myhdir = Myprocess->pr_HomeDir;
 	mymod  = Mycli->cli_Module;
 
-	/* clear it so that we don't "free" ourself on MySyncRun_done: */
+	/* 
+	 * Clear pr_HomeDir so that we don't "free" ourself on MySyncRun_done.
+	 * This ensures that each command gets its own home directory context,
+	 * which is essential for proper PROGDIR: resolution in child processes.
+	 */
 	Myprocess->pr_HomeDir = NULL;
 	Mycli->cli_Module = NULL;
 
@@ -971,5 +975,95 @@ dofind( char *cmd, char *ext, char *buf, char *path)
 terminate:
 	Myprocess->pr_WindowPtr = o_noreq ? (APTR) -1L : 0L/*Mywindow*/;
 	return ret;
+}
+
+
+/*
+ * PROGDIR: handling functions
+ * These functions provide proper support for the PROGDIR: virtual volume
+ * using the recommended AmigaDOS functions instead of direct pr_HomeDir manipulation
+ */
+
+BPTR GetCShellProgramDir(void)
+{
+    /*
+     * GetCShellProgramDir() returns a shared lock to the directory from which the current
+     * process was launched. This is the recommended way to access PROGDIR:
+     * instead of directly reading pr_HomeDir.
+     * 
+     * IMPORTANT: The returned lock is shared and should NOT be unlocked by the caller.
+     * This is different from the lock returned by GetProgramDir() which is managed
+     * by the system.
+     */
+    return GetProgramDir();
+}
+
+BPTR SetCShellProgramDir(BPTR lock)
+{
+    /*
+     * SetCShellProgramDir() allows manual setting of the program directory.
+     * This should be used carefully and the original lock should be restored
+     * before the process exits.
+     * 
+     * Returns the previous program directory lock that should be saved
+     * and restored when done.
+     */
+    return SetProgramDir(lock);
+}
+
+BOOL IsProgramDirAvailable(void)
+{
+    /*
+     * Check if PROGDIR: is available for the current process.
+     * PROGDIR: is only available if the executable was loaded from a disk.
+     * It is not set for programs executed from a resident segment or
+     * for shell built-in commands.
+     * 
+     * Note: GetProgramDir() returns a shared lock that should NOT be unlocked.
+     */
+    BPTR progdir_lock;
+    
+    progdir_lock = GetCShellProgramDir();
+    return (BOOL)(progdir_lock != (BPTR)0);
+}
+
+char *ResolveProgDirPath(char *path, char *buffer, int bufsize)
+{
+    /*
+     * Resolve a path that may contain PROGDIR: prefix.
+     * If the path starts with "PROGDIR:", replace it with the actual
+     * program directory path. Otherwise, return the path unchanged.
+     */
+    BPTR progdir_lock;
+    char progdir_path[256];
+    
+    if (!path || !buffer || bufsize <= 0) {
+        return NULL;
+    }
+    
+    /* Check if path starts with PROGDIR: */
+    if (strnicmp(path, "PROGDIR:", 8) == 0) {
+        progdir_lock = GetCShellProgramDir();
+        if (progdir_lock) {
+            if (NameFromLock(progdir_lock, progdir_path, sizeof(progdir_path))) {
+                /* Replace PROGDIR: with actual path */
+                if (strlen(progdir_path) + strlen(path) - 8 < bufsize) {
+                    strcpy(buffer, progdir_path);
+                    strcat(buffer, path + 8); /* Skip "PROGDIR:" */
+                    return buffer;
+                }
+            }
+        }
+        /* If PROGDIR: is not available, return NULL to indicate error */
+        return NULL;
+    }
+    
+    /* Path doesn't start with PROGDIR:, return as-is */
+    if (strlen(path) < bufsize) {
+        strcpy(buffer, path);
+        return buffer;
+    }
+    
+    return NULL;
 }
 

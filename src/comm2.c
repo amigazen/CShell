@@ -6,8 +6,8 @@
  * Version 2.07M by Steve Drew 10-Sep-87
  * Version 4.01A by Carlo Borreo & Cesare Dieni 17-Feb-90
  * Version 5.00L by Urban Mueller 17-Feb-91
- * Version 5.20L by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
- * Version 5.60M by amigazen project 2025-08-07
+ * Version 5.20L and 5.50 by Andreas M. Kirchwitz (Fri, 13 Mar 1992)
+ * Version 5.60M+ by amigazen project 2025-08-07
  *
  */
 
@@ -354,12 +354,14 @@ do_version( void )
 
 	if (ac > 1) {
 		for ( i=1; i<ac; ++i) {
-			sprintf(str,"C:Version%s%s%s%s \"%s\"",
-				(options&1) ? " FILE" : "",		/* -f */
-				(options&2) ? " INTERNAL" : "",		/* -i */
-				(options&4) ? " FULL" : "",		/* -l */
-				(options&8) ? " RES" : "",		/* -r */
-				av[i]);
+			if(strlen(av[i]) < sizeof(str)-50) {
+				sprintf(str,"C:Version%s%s%s%s \"%s\"",
+					(options&1) ? " FILE" : "",		/* -f */
+					(options&2) ? " INTERNAL" : "",		/* -i */
+					(options&4) ? " FULL" : "",		/* -l */
+					(options&8) ? " RES" : "",		/* -r */
+					av[i]);
+			} else { ierror(av[i],506); continue; }
 			execute(str);
 		}
 	}
@@ -370,7 +372,7 @@ do_version( void )
 			 "3.00 ARP (A) versions by Carlo Borreo, Cesare Dieni\n"
 			 "4.00 ARP 1.3 versions by Carlo Borreo, Cesare Dieni\n"
 			 "5.00 Lattice versions by U. Dominik Mueller\n"
-			 "5.20 OS 2.0 versions by Andreas M. Kirchwitz\n"
+			 "5.20 and 5.50 OS 2.0 versions by Andreas M. Kirchwitz\n"
 			 "5.60+ versions by amigazen project\n");
 		printf( shellcompiled );
 		printf("Currently running: ");

@@ -1,0 +1,11 @@
+Simply copy the file LhA2LZX.sh to CSH: and type and type LhA2LZX in a
+directory where you have some LhA archives.
+They will be converted (only if LZX is better)  in all the path.
+Don't forget to edit the script a while to set some variables.
+
+If you find something bad or if you like it feel free to email me at
+rohee@univ-mlv.fr.
+
+Thank you for downloading LhA2LZX :-)
+
+#include <disclaimer.h>
