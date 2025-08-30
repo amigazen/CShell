@@ -26,12 +26,12 @@ PRs for all of our projects are gratefully received at [GitHub](https://github.c
 
 All amigazen projects have been updated:
 - To build against the latest NDK3.2
-- Using the latest good version of at least one standard Amiga compiler - either SAS/C (6.58), DICE, VBCC or GCC (2.95.3)
+- Using the latest good version of at least one standard Amiga compiler - either SAS/C (6.58), DICE, VBCC or GCC
 - And will build straight out of the box, for anyone who has ToolKit setup correctly
 
 ## About ToolKit
 
-**ToolKit** exists to solve the problem that most Amiga software was written in the 1980s and 90s, by individuals working alone, each with their own preferred setup for where their dev tools are run from, where their include files, static libs and other toolchain artifacts could be found, which versions they used and which custom modifications they made. Open source collaboration did not exist as we know it in 2025. 
+**ToolKit** exists to solve the problem that most Amiga software was written in the 1980s and 90s, by individuals working alone, each with their own preferred setup for where their dev tools are run from, where their include files, static libs and other toolchain artifacts could be found, which versions they used and which custom modifications they made. Open source collaboration did not exist then as we know it now. 
 
 **ToolKit** from amigazen project is a work in progress to make a standardised installation of not just the Native Developer Kit, but the compilers, build tools and third party components needed to be able to consistently build projects in collaboration with others, without each contributor having to change build files to work with their particular toolchain configuration. 
 
@@ -43,7 +43,7 @@ Each component of **ToolKit** is open source and like *csh* here will have it's 
 
 - Amiga or Amiga-compatible computer with latest operating system software
 - SAS/C 6.58 setup according to ToolKit standard
-- NDK3.2R4
+- NDK3.2
 
 ## Installation
 
@@ -55,10 +55,6 @@ Each component of **ToolKit** is open source and like *csh* here will have it's 
 ## Changelog
 
 See (CHANGELOG.md)
-
-## To Do
-
-See (TODO.md)
 
 ## Contact 
 
